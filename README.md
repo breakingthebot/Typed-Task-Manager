@@ -7,7 +7,7 @@ Created: 2026-06-18
 
 # Typed Task Manager
 
-A browser-based task manager built with strict TypeScript and a testable, storage-independent CRUD domain.
+A browser-based task manager built with strict TypeScript, modular UI components, and a testable CRUD domain.
 
 ## Stack
 
@@ -36,7 +36,13 @@ No secrets are required. See `.env.example` for the complete template.
 
 ## Running Locally
 
-Iteration 1 provides the typed task domain and testable CRUD service. The browser interface is planned for Iteration 2.
+Run the browser app:
+
+```bash
+npm run dev
+```
+
+Run checks:
 
 ```bash
 npm run test
@@ -51,13 +57,13 @@ Not deployed.
 
 ## Architecture Notes
 
-This first iteration builds the reliable core before adding screens. Task contracts live in `src/models`, reusable generic helpers and validation live in `src/utils`, and CRUD behavior lives in `src/services`. The task service depends on a storage adapter instead of reaching directly into browser APIs, which keeps persistence replaceable and makes the domain easy to test in isolation.
+This build starts with a typed domain core and then layers a framework-free browser UI on top of it. Task contracts live in `src/models`, reusable helpers and validation live in `src/utils`, persistence and CRUD behavior live in `src/services`, and the browser rendering code is split across focused files in `src/components`. The task service still depends on a storage adapter instead of direct browser access, which keeps the domain testable and the UI thin.
 
-Every write validates and normalizes input first. Stored data carries a schema version so malformed or incompatible saved data fails explicitly instead of silently producing incorrect results. Structured logs capture operation context and task IDs without logging task content.
+Every write validates and normalizes input first. Stored data carries a schema version so malformed or incompatible saved data fails explicitly instead of silently producing incorrect results. The UI adds loading, empty, validation, and storage-error states so the app still explains what is happening when something goes wrong.
 
 ## Testing
 
-Tests mirror the source structure and cover generic utilities, validation, CRUD behavior, filtering, and malformed storage handling.
+Tests mirror the source structure and now cover both domain behavior and core browser interaction flows including create, edit, filter, and delete actions.
 
 ```bash
 npm run check
@@ -67,7 +73,8 @@ npm run check
 
 - Tasks are stored only in the current browser.
 - Clearing local site data removes stored tasks.
-- The project has no runtime dependencies and makes no network requests in Iteration 1.
+- Tasks are persisted in browser `localStorage`.
+- The app is fully client-side and makes no network requests.
 - See [CHANGELOG.md](CHANGELOG.md) for iteration history.
 
 ## License

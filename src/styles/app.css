@@ -1,0 +1,339 @@
+/**
+ * src/styles/app.css
+ * Defines the visual system, responsive layout, and states for the browser app.
+ * Connects to: index.html, src/main.ts, src/components/
+ * Created: 2026-06-18
+ */
+
+:root {
+  color-scheme: light;
+  --bg: #f3efe6;
+  --bg-accent: #eadac2;
+  --panel: rgba(255, 252, 245, 0.92);
+  --panel-strong: #fffdf7;
+  --text: #1f2a2a;
+  --muted: #576160;
+  --line: rgba(31, 42, 42, 0.12);
+  --primary: #0e6f5c;
+  --primary-strong: #084f42;
+  --danger: #aa3f2d;
+  --todo: #99640e;
+  --progress: #0f5ca8;
+  --done: #1d7b37;
+  --shadow: 0 16px 40px rgba(31, 42, 42, 0.12);
+  font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+  line-height: 1.5;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.7), transparent 38%),
+    linear-gradient(135deg, var(--bg), var(--bg-accent));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+  border-radius: 0.9rem;
+  border: 1px solid var(--line);
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(14, 111, 92, 0.22);
+  outline-offset: 2px;
+}
+
+#app {
+  width: min(1160px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1.25rem 0 2rem;
+}
+
+.app-shell {
+  display: grid;
+  gap: 1rem;
+}
+
+.panel {
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+}
+
+.hero-panel {
+  overflow: hidden;
+  position: relative;
+}
+
+.hero-panel::after {
+  content: '';
+  position: absolute;
+  inset: auto -4rem -4rem auto;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 50%;
+  background: rgba(14, 111, 92, 0.12);
+}
+
+.hero-panel h1,
+.panel h2,
+.panel h3 {
+  margin: 0;
+}
+
+.hero-copy,
+.panel-copy,
+.task-description,
+.task-meta,
+.feedback,
+.empty-state p {
+  color: var(--muted);
+}
+
+.hero-stats,
+.content-grid,
+.filter-grid,
+.button-row,
+.task-card-footer,
+.task-card-header {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.hero-stats {
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.hero-stat {
+  min-width: 9rem;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 1rem;
+}
+
+.hero-stat-label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.hero-stat-value {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1.15rem;
+}
+
+.feedback {
+  margin: 0;
+  padding: 0.95rem 1.1rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.feedback.error,
+.form-errors {
+  background: rgba(170, 63, 45, 0.1);
+  color: #7f2417;
+  border: 1px solid rgba(170, 63, 45, 0.2);
+}
+
+.content-grid {
+  align-items: start;
+  flex-direction: column;
+}
+
+.task-form,
+.task-filters,
+.task-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.field-label {
+  font-weight: 600;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  padding: 0.8rem 0.95rem;
+  background: var(--panel-strong);
+}
+
+.button-row {
+  flex-wrap: wrap;
+}
+
+.button-row.compact {
+  justify-content: flex-end;
+}
+
+.button {
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  border: none;
+  transition:
+    transform 120ms ease,
+    opacity 120ms ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+}
+
+.button-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.button-secondary {
+  background: rgba(8, 79, 66, 0.08);
+  color: var(--primary-strong);
+}
+
+.button-danger {
+  background: rgba(170, 63, 45, 0.12);
+  color: var(--danger);
+}
+
+.task-card-list,
+.error-list {
+  margin: 0;
+  padding: 0;
+}
+
+.task-card-list {
+  display: grid;
+  gap: 0.9rem;
+  list-style: none;
+}
+
+.task-card {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.task-card-header,
+.task-card-footer {
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.task-meta,
+.task-description,
+.panel-copy,
+.hero-copy {
+  margin: 0.35rem 0 0;
+}
+
+.task-description {
+  color: var(--text);
+}
+
+.status-badge {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+  background: rgba(31, 42, 42, 0.08);
+}
+
+.status-todo {
+  color: var(--todo);
+}
+
+.status-in-progress {
+  color: var(--progress);
+}
+
+.status-done {
+  color: var(--done);
+}
+
+.inline-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--muted);
+}
+
+.empty-state {
+  padding: 1.4rem;
+  border: 1px dashed var(--line);
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.empty-state h3,
+.empty-state p {
+  margin: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .content-grid {
+    display: grid;
+    grid-template-columns: minmax(20rem, 24rem) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  #app {
+    width: min(100% - 1rem, 1160px);
+    padding-top: 0.5rem;
+  }
+
+  .panel {
+    padding: 1rem;
+    border-radius: 1.15rem;
+  }
+
+  .button,
+  .field input,
+  .field textarea,
+  .field select {
+    width: 100%;
+  }
+
+  .inline-select {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

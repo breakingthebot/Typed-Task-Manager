@@ -10,6 +10,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     coverage: {
+      include: ['src/**/*.ts'],
+      exclude: ['src/main.ts', 'src/models/storage.ts', 'src/vite-env.d.ts'],
       provider: 'v8',
       reporter: ['text', 'html'],
       thresholds: {

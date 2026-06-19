@@ -11,6 +11,21 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-18
+
+### Added
+
+- Browser application entrypoint with a responsive two-panel layout.
+- Modular UI for task creation, filtering, editing, deletion, and quick status changes.
+- Loading, empty, validation, and storage error states with user-facing messaging.
+- Local time formatting helper for task timestamps.
+- Browser interaction tests covering create, edit, filter, and delete flows.
+
+### Changed
+
+- Build pipeline now emits a real Vite browser bundle.
+- README now documents the browser app workflow and updated architecture.
+
 ## [0.1.0] - 2026-06-18
 
 ### Added
