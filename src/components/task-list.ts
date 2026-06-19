@@ -11,10 +11,12 @@ import { formatTaskTimestamp } from '../utils/date-format';
 interface TaskListOptions {
   tasks: Task[];
   hasLoadError: boolean;
+  selectedTaskIds: string[];
   onEdit(taskId: string): void;
   onDuplicate(taskId: string): void;
   onDelete(taskId: string): void;
   onStatusChange(taskId: string, status: TaskStatus): void;
+  onToggleSelect(taskId: string, selected: boolean): void;
 }
 
 /** Creates grouped task sections or an appropriate empty/error state. */
@@ -96,6 +98,9 @@ function createStatusColumn(
 function createTaskCard(task: Task, options: TaskListOptions): HTMLElement {
   const item = document.createElement('li');
   item.className = 'task-card';
+  if (options.selectedTaskIds.includes(task.id)) {
+    item.classList.add('task-card-selected');
+  }
 
   const header = document.createElement('div');
   header.className = 'task-card-header';
@@ -123,6 +128,24 @@ function createTaskCard(task: Task, options: TaskListOptions): HTMLElement {
 
   const footer = document.createElement('div');
   footer.className = 'task-card-footer';
+
+  const selectLabel = document.createElement('label');
+  selectLabel.className = 'inline-select';
+  selectLabel.htmlFor = `task-select-${task.id}`;
+
+  const selectText = document.createElement('span');
+  selectText.textContent = 'Select';
+
+  const selectCheckbox = document.createElement('input');
+  selectCheckbox.id = `task-select-${task.id}`;
+  selectCheckbox.type = 'checkbox';
+  selectCheckbox.checked = options.selectedTaskIds.includes(task.id);
+  selectCheckbox.setAttribute('aria-label', `Select task ${task.title}`);
+  selectCheckbox.addEventListener('change', () =>
+    options.onToggleSelect(task.id, selectCheckbox.checked),
+  );
+
+  selectLabel.append(selectText, selectCheckbox);
 
   const statusLabel = document.createElement('label');
   statusLabel.className = 'inline-select';
@@ -171,7 +194,7 @@ function createTaskCard(task: Task, options: TaskListOptions): HTMLElement {
   deleteButton.addEventListener('click', () => options.onDelete(task.id));
 
   buttonRow.append(editButton, duplicateButton, deleteButton);
-  footer.append(statusLabel, buttonRow);
+  footer.append(selectLabel, statusLabel, buttonRow);
   item.append(header, description, footer);
   return item;
 }

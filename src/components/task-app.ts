@@ -13,6 +13,7 @@ import { TaskNotFoundError, TaskValidationError, type TaskService } from '../ser
 import { UiPreferencesService } from '../services/ui-preferences-service';
 import { log } from '../utils/logger';
 import { formatTaskTimestamp } from '../utils/date-format';
+import { createTaskBulkActions } from './task-bulk-actions';
 import { createTaskBackupHistory } from './task-backup-history';
 import { createTaskDataTools } from './task-data-tools';
 import { createTaskFilters } from './task-filters';
@@ -22,6 +23,7 @@ import { createTaskList } from './task-list';
 interface TaskAppState {
   tasks: Task[];
   filters: TaskFilters;
+  selectedTaskIds: string[];
   mode: TaskFormMode;
   editingTaskId: string | null;
   formValues: TaskFormValues;
@@ -32,7 +34,7 @@ interface TaskAppState {
   dataText: string;
   backups: TaskBackupRecord[];
   toast: { message: string; undoLabel: string } | null;
-  deletedTask: Task | null;
+  deletedTasks: Task[] | null;
 }
 
 interface TaskApp {
@@ -55,6 +57,7 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
   const state: TaskAppState = {
     tasks: [],
     filters: preferencesService.readFilters(),
+    selectedTaskIds: [],
     mode: 'create',
     editingTaskId: null,
     formValues: { ...DEFAULT_FORM_VALUES },
@@ -65,7 +68,7 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     dataText: '',
     backups: [],
     toast: null,
-    deletedTask: null,
+    deletedTasks: null,
   };
 
   let undoTimerId: number | null = null;
@@ -81,12 +84,16 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
   function refreshTasks(statusMessage: string): void {
     try {
       state.tasks = taskService.list(state.filters);
+      state.selectedTaskIds = state.selectedTaskIds.filter((taskId) =>
+        state.tasks.some((task) => task.id === taskId),
+      );
       state.backups = taskService.listBackups();
       state.loadError = '';
       state.statusMessage = statusMessage;
       render();
     } catch (error) {
       state.tasks = [];
+      state.selectedTaskIds = [];
       state.backups = [];
       state.loadError = getUserMessage(error, 'Tasks could not be loaded.');
       state.statusMessage = 'Storage needs attention before tasks can be used.';
@@ -106,6 +113,18 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     state.filters = { ...DEFAULT_BOARD_FILTERS };
     preferencesService.resetFilters();
     refreshTasks('Board filters reset.');
+  }
+
+  /** Toggles whether a task is selected for a bulk action. */
+  function handleToggleSelect(taskId: string, selected: boolean): void {
+    const nextSelected = new Set(state.selectedTaskIds);
+    if (selected) {
+      nextSelected.add(taskId);
+    } else {
+      nextSelected.delete(taskId);
+    }
+    state.selectedTaskIds = [...nextSelected];
+    render();
   }
 
   /** Applies form submissions to either create or update one task. */
@@ -174,11 +193,41 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
   function handleDelete(taskId: string): void {
     try {
       const deletedTask = taskService.delete(taskId);
+      state.selectedTaskIds = state.selectedTaskIds.filter((selectedId) => selectedId !== taskId);
       if (state.editingTaskId === taskId) resetForm();
-      showToast(`Deleted "${deletedTask.title}".`, 'Undo delete', deletedTask);
+      showToast(`Deleted "${deletedTask.title}".`, 'Undo delete', [deletedTask]);
       refreshTasks(`Deleted "${deletedTask.title}".`);
     } catch (error) {
       state.statusMessage = getUserMessage(error, 'Task could not be deleted.');
+      render();
+    }
+  }
+
+  /** Moves all selected tasks to a new status in one write. */
+  function handleBulkStatusChange(status: TaskStatus): void {
+    try {
+      const updatedTasks = taskService.updateMany(state.selectedTaskIds, { status });
+      clearSelection();
+      refreshTasks(`Moved ${updatedTasks.length} tasks to ${status}.`);
+    } catch (error) {
+      state.statusMessage = getUserMessage(error, 'Selected tasks could not be updated.');
+      render();
+    }
+  }
+
+  /** Deletes all selected tasks in one write and shows undo for the full group. */
+  function handleBulkDelete(): void {
+    try {
+      const deletedTasks = taskService.deleteMany(state.selectedTaskIds);
+      if (deletedTasks.length === 0) return;
+      clearSelection();
+      if (state.editingTaskId && deletedTasks.some((task) => task.id === state.editingTaskId)) {
+        resetForm();
+      }
+      showToast(`Deleted ${deletedTasks.length} tasks.`, 'Undo delete', deletedTasks);
+      refreshTasks(`Deleted ${deletedTasks.length} tasks.`);
+    } catch (error) {
+      state.statusMessage = getUserMessage(error, 'Selected tasks could not be deleted.');
       render();
     }
   }
@@ -203,12 +252,16 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
 
   /** Restores the most recently deleted task and clears the undo toast. */
   function handleUndoDelete(): void {
-    if (!state.deletedTask) return;
+    if (!state.deletedTasks) return;
 
-    const restoredTask = state.deletedTask;
+    const restoredTasks = state.deletedTasks;
     clearToast();
-    taskService.restoreDeletedTask(restoredTask);
-    state.statusMessage = `Restored "${restoredTask.title}".`;
+    taskService.restoreDeletedTasks(restoredTasks);
+    const firstRestoredTask = restoredTasks[0];
+    state.statusMessage =
+      restoredTasks.length === 1 && firstRestoredTask
+        ? `Restored "${firstRestoredTask.title}".`
+        : `Restored ${restoredTasks.length} tasks.`;
     refreshTasks(state.statusMessage);
   }
 
@@ -284,7 +337,7 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     }
 
     if (isModifierShortcut && event.key.toLowerCase() === 'z') {
-      if (!state.deletedTask) return;
+      if (!state.deletedTasks) return;
       event.preventDefault();
       handleUndoDelete();
       return;
@@ -383,6 +436,12 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     const boardPanel = document.createElement('section');
     boardPanel.className = 'panel';
     boardPanel.append(
+      createTaskBulkActions({
+        selectedCount: state.selectedTaskIds.length,
+        onApplyStatus: handleBulkStatusChange,
+        onDeleteSelected: handleBulkDelete,
+        onClearSelection: clearSelection,
+      }),
       createTaskFilters({
         filters: state.filters,
         onChange: handleFilterChange,
@@ -391,10 +450,12 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
       createTaskList({
         tasks: state.tasks,
         hasLoadError: Boolean(state.loadError),
+        selectedTaskIds: state.selectedTaskIds,
         onEdit: handleEdit,
         onDuplicate: handleDuplicate,
         onDelete: handleDelete,
         onStatusChange: handleStatusChange,
+        onToggleSelect: handleToggleSelect,
       }),
     );
 
@@ -428,12 +489,12 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
   }
 
   /** Shows a short-lived toast and optionally enables undo for a deleted task. */
-  function showToast(message: string, undoLabel: string, deletedTask: Task | null = null): void {
+  function showToast(message: string, undoLabel: string, deletedTasks: Task[] | null = null): void {
     clearToast();
     state.toast = { message, undoLabel };
-    state.deletedTask = deletedTask;
+    state.deletedTasks = deletedTasks;
 
-    if (deletedTask) {
+    if (deletedTasks) {
       undoTimerId = window.setTimeout(() => {
         clearToast();
         render();
@@ -449,7 +510,14 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     }
 
     state.toast = null;
-    state.deletedTask = null;
+    state.deletedTasks = null;
+  }
+
+  /** Clears the selected bulk-action task IDs. */
+  function clearSelection(): void {
+    if (state.selectedTaskIds.length === 0) return;
+    state.selectedTaskIds = [];
+    render();
   }
 
   /** Focuses the search field to support fast keyboard navigation. */

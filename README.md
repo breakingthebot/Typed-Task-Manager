@@ -7,7 +7,7 @@ Created: 2026-06-18
 
 # Typed Task Manager
 
-A browser-based task manager built with strict TypeScript, modular UI components, grouped task board sections, import/export tooling, backup history, saved board preferences, task duplication, delete undo, and a testable CRUD domain.
+A browser-based task manager built with strict TypeScript, modular UI components, grouped task board sections, import/export tooling, backup history, saved board preferences, task duplication, bulk task actions, delete undo, and a testable CRUD domain.
 
 ## Stack
 
@@ -75,9 +75,11 @@ This iteration adds task duplication, so a card can be copied into a fresh creat
 
 This iteration adds a reset action for saved board preferences, so you can get back to the default task view in one click.
 
+This iteration adds bulk task actions, so several selected cards can be moved or deleted together and restored from a single undo.
+
 ## Testing
 
-Tests mirror the source structure and now cover domain behavior plus browser interaction flows including create, edit, duplicate, filter, delete, backup restore, and persisted preferences.
+Tests mirror the source structure and now cover domain behavior plus browser interaction flows including create, edit, duplicate, bulk actions, filter, delete, backup restore, and persisted preferences.
 
 ```bash
 npm run check
@@ -97,6 +99,7 @@ npm run check
 - Board preferences are stored separately from task data.
 - Tasks can be duplicated into a prefilled create draft from the board.
 - Board filters can be reset back to the default view.
+- Multiple selected tasks can be updated or deleted together.
 - See [CHANGELOG.md](CHANGELOG.md) for iteration history.
 
 ## License

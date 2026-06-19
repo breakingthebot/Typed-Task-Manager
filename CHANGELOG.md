@@ -11,6 +11,18 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-06-19
+
+### Added
+
+- Bulk selection controls on task cards with bulk status changes and bulk delete actions.
+- Single undo path for restoring a deleted group of tasks.
+- Browser and service coverage for the bulk action flow.
+
+### Changed
+
+- README now documents bulk task actions and the grouped undo flow.
+
 ## [1.1.0] - 2026-06-19
 
 ### Added

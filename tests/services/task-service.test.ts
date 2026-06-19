@@ -53,6 +53,34 @@ describe('TaskService', () => {
     expect(service.list()).toEqual([]);
   });
 
+  it('updates and deletes many tasks in one write', () => {
+    service.create({ title: 'One', status: 'todo' });
+    timestamp = '2026-06-18T12:10:00.000Z';
+    service.create({ title: 'Two', status: 'todo' });
+
+    const updated = service.updateMany(['task-1', 'task-2'], { status: 'done' });
+    expect(updated).toHaveLength(2);
+    expect(service.list({ status: 'done' })).toHaveLength(2);
+
+    const deleted = service.deleteMany(['task-1', 'task-2']);
+    expect(deleted.map(({ title }) => title)).toEqual(['One', 'Two']);
+    expect(service.list()).toEqual([]);
+
+    service.restoreDeletedTasks(deleted);
+    expect(service.list().map(({ title }) => title)).toEqual(['One', 'Two']);
+  });
+
+  it('rejects bulk updates and deletes when a task ID is missing', () => {
+    service.create({ title: 'One' });
+
+    expect(() => service.updateMany(['task-1', 'missing'], { status: 'done' })).toThrow(
+      TaskNotFoundError,
+    );
+    expect(() => service.deleteMany(['task-1', 'missing'])).toThrow(TaskNotFoundError);
+    expect(service.updateMany([], { status: 'done' })).toEqual([]);
+    expect(service.deleteMany([])).toEqual([]);
+  });
+
   it('stores and restores recent backup snapshots', () => {
     service.create({ title: 'First snapshot' });
     timestamp = '2026-06-18T12:10:00.000Z';

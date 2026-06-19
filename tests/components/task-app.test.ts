@@ -154,9 +154,27 @@ describe('task app', () => {
     expect(root.textContent).toContain('Deleted "Keyboard task".');
     expect(root.textContent).toContain('Undo delete');
 
-    dispatchShortcut(root, 'z', true);
+    clickButton('Undo delete');
     expect(root.textContent).toContain('Restored "Keyboard task".');
     expect(root.textContent).toContain('Keyboard task');
+  });
+
+  it('dismisses the delete toast with Escape', () => {
+    const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
+    const root = document.querySelector<HTMLElement>('#app');
+
+    if (!root) throw new Error('Missing app root in test.');
+
+    createTaskApp(root, service).mount();
+
+    setInputValue('Title', 'Dismissible task');
+    clickButton('Add task');
+    clickButton('Delete');
+    expect(root.textContent).toContain('Undo delete');
+
+    dispatchShortcut(root, 'Escape', false);
+
+    expect(root.textContent).not.toContain('Undo delete');
   });
 
   it('duplicates an existing task into a new create draft', () => {
@@ -269,6 +287,62 @@ describe('task app', () => {
     expect(getAriaSelectValue('Priority')).toBe('');
     expect(getAriaSelectValue('Sort')).toBe('updatedAt-desc');
   });
+
+  it('applies bulk actions to selected tasks and restores deleted groups', () => {
+    const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
+    const root = document.querySelector<HTMLElement>('#app');
+
+    if (!root) throw new Error('Missing app root in test.');
+
+    createTaskApp(root, service).mount();
+
+    setInputValue('Title', 'First task');
+    clickButton('Add task');
+    setInputValue('Title', 'Second task');
+    clickButton('Add task');
+
+    setCheckboxByAriaLabel('Select task First task', true);
+    setCheckboxByAriaLabel('Select task Second task', true);
+    changeSelectValue('Bulk status', 'done');
+    clickButton('Apply status');
+
+    expect(root.textContent).toContain('Moved 2 tasks to done.');
+    expect(root.textContent).toContain('Done2');
+
+    setCheckboxByAriaLabel('Select task First task', true);
+    setCheckboxByAriaLabel('Select task Second task', true);
+    clickButton('Delete selected');
+
+    expect(root.textContent).toContain('Deleted 2 tasks.');
+    expect(root.textContent).toContain('Undo delete');
+
+    clickButton('Undo delete');
+    expect(root.textContent).toContain('Restored 2 tasks.');
+    expect(root.textContent).toContain('First task');
+    expect(root.textContent).toContain('Second task');
+  });
+
+  it('ignores empty bulk actions without changing the board', () => {
+    const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
+    const root = document.querySelector<HTMLElement>('#app');
+
+    if (!root) throw new Error('Missing app root in test.');
+
+    createTaskApp(root, service).mount();
+
+    const bulkStatus = document.getElementById('bulk-status');
+    if (!(bulkStatus instanceof HTMLSelectElement)) {
+      throw new Error('Bulk status select not found.');
+    }
+    bulkStatus.value = 'done';
+
+    const applyButton = findButton('Apply status');
+    const clearButton = findButton('Clear selection');
+    applyButton.dispatchEvent(new Event('click', { bubbles: true }));
+    clearButton.dispatchEvent(new Event('click', { bubbles: true }));
+
+    expect(root.textContent).toContain('Moved 0 tasks to done.');
+  });
 });
 
 /** Creates deterministic task IDs so UI tests can assert stable updates. */
@@ -356,6 +430,29 @@ function setSelectValueById(id: string, value: string): void {
   }
   select.value = value;
   select.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+/** Changes one checkbox control by its accessible label. */
+function setCheckboxByAriaLabel(labelText: string, checked: boolean): void {
+  const checkbox = Array.from(document.querySelectorAll('input[type="checkbox"]')).find(
+    (candidate) => candidate.getAttribute('aria-label') === labelText,
+  );
+  if (!(checkbox instanceof HTMLInputElement)) {
+    throw new Error(`Checkbox "${labelText}" not found.`);
+  }
+  checkbox.checked = checked;
+  checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+/** Finds one button by its visible label in the document. */
+function findButton(labelText: string): HTMLButtonElement {
+  const button = Array.from(document.querySelectorAll('button')).find(
+    (candidate) => candidate.textContent?.trim() === labelText,
+  );
+  if (!(button instanceof HTMLButtonElement)) {
+    throw new Error(`Button "${labelText}" not found.`);
+  }
+  return button;
 }
 
 /** Clicks the first button whose text exactly matches the requested label. */

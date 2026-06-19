@@ -124,9 +124,14 @@ export class TaskService {
 
   /** Restores one deleted task into the current collection. */
   restoreDeletedTask(task: Task): void {
-    this.assertImportedTasks([task]);
-    this.writeTasks([...this.readTasks(), task], 'Deleted task restored');
-    log('info', 'Task restored', { taskId: task.id });
+    this.restoreDeletedTasks([task]);
+  }
+
+  /** Restores one or more deleted tasks into the current collection. */
+  restoreDeletedTasks(tasks: Task[]): void {
+    this.assertImportedTasks(tasks);
+    this.writeTasks([...this.readTasks(), ...tasks], 'Deleted task restored');
+    log('info', 'Task restored', { count: tasks.length });
   }
 
   /** Returns the current snapshot history, newest first. */
@@ -148,6 +153,61 @@ export class TaskService {
       count: snapshot.items.length,
     });
     return snapshot;
+  }
+
+  /** Deletes several tasks in one write and returns the removed records. */
+  deleteMany(taskIds: string[]): Task[] {
+    const ids = uniqueIds(taskIds);
+    if (ids.length === 0) return [];
+
+    const currentTasks = this.readTasks();
+    const removedTasks = currentTasks.filter((task) => ids.includes(task.id));
+    if (removedTasks.length !== ids.length) {
+      const missingId = ids.find((id) => !currentTasks.some((task) => task.id === id));
+      throw new TaskNotFoundError(missingId ?? ids[0] ?? 'unknown');
+    }
+
+    this.writeTasks(
+      currentTasks.filter((task) => !ids.includes(task.id)),
+      'Tasks deleted',
+    );
+    log('info', 'Tasks deleted', { count: removedTasks.length });
+    return removedTasks;
+  }
+
+  /** Updates several tasks in one write and returns the changed records. */
+  updateMany(taskIds: string[], changes: TaskUpdate): Task[] {
+    this.assertValid(changes, false);
+    const ids = uniqueIds(taskIds);
+    if (ids.length === 0) return [];
+
+    const currentTasks = this.readTasks();
+    const timestamp = this.now();
+    const updatedTasks: Task[] = [];
+
+    const nextTasks = currentTasks.map((task) => {
+      if (!ids.includes(task.id)) return task;
+
+      const updated: Task = {
+        ...task,
+        ...changes,
+        title: changes.title === undefined ? task.title : sanitizeText(changes.title),
+        description:
+          changes.description === undefined ? task.description : sanitizeText(changes.description),
+        updatedAt: timestamp,
+      };
+      updatedTasks.push(updated);
+      return updated;
+    });
+
+    if (updatedTasks.length !== ids.length) {
+      const missingId = ids.find((id) => !currentTasks.some((task) => task.id === id));
+      throw new TaskNotFoundError(missingId ?? ids[0] ?? 'unknown');
+    }
+
+    this.writeTasks(nextTasks, 'Tasks updated');
+    log('info', 'Tasks updated', { count: updatedTasks.length });
+    return updatedTasks;
   }
 
   /** Converts parsing and storage failures into explicit diagnostic errors. */
@@ -309,4 +369,9 @@ function isBackupRecord(value: unknown): value is TaskBackupRecord {
     Array.isArray(record.items) &&
     record.items.every(isImportedTask)
   );
+}
+
+/** Deduplicates IDs while keeping their first-seen order. */
+function uniqueIds(values: string[]): string[] {
+  return [...new Set(values)];
 }
