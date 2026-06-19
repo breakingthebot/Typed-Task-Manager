@@ -157,6 +157,35 @@ describe('task app', () => {
     expect(root.textContent).toContain('Restored "Keyboard task".');
     expect(root.textContent).toContain('Keyboard task');
   });
+
+  it('shows backup history and restores a saved snapshot', () => {
+    const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
+    const root = document.querySelector<HTMLElement>('#app');
+
+    if (!root) throw new Error('Missing app root in test.');
+
+    createTaskApp(root, service).mount();
+
+    setInputValue('Title', 'Original task');
+    clickButton('Add task');
+
+    clickButton('Edit');
+    setInputValue('Title', 'Updated task');
+    clickButton('Save changes');
+
+    expect(root.textContent).toContain('Backup history');
+    expect(root.textContent).toContain('Task updated');
+
+    const restoreButtons = document.querySelectorAll('.backup-history button');
+    const restoreButton = restoreButtons.item(1);
+    if (!(restoreButton instanceof HTMLButtonElement)) {
+      throw new Error('Restore button not found.');
+    }
+
+    restoreButton.click();
+    expect(root.textContent).toContain('Restored backup from');
+    expect(root.textContent).toContain('Original task');
+  });
 });
 
 /** Creates deterministic task IDs so UI tests can assert stable updates. */

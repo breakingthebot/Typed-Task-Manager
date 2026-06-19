@@ -5,8 +5,14 @@
  * Created: 2026-06-18
  */
 
-import { STORAGE_KEY, STORAGE_VERSION } from '../config/app-config';
+import {
+  BACKUP_LIMIT,
+  BACKUP_STORAGE_KEY,
+  STORAGE_KEY,
+  STORAGE_VERSION,
+} from '../config/app-config';
 import type { StoredCollection, StorageAdapter } from '../models/storage';
+import type { TaskBackupRecord } from '../models/task-backup';
 import {
   TASK_PRIORITIES,
   TASK_STATUSES,
@@ -79,7 +85,7 @@ export class TaskService {
       createdAt: timestamp,
       updatedAt: timestamp,
     };
-    this.writeTasks([...this.readTasks(), task]);
+    this.writeTasks([...this.readTasks(), task], 'Task created');
     log('info', 'Task created', { taskId: task.id });
     return task;
   }
@@ -96,7 +102,7 @@ export class TaskService {
         changes.description === undefined ? current.description : sanitizeText(changes.description),
       updatedAt: this.now(),
     };
-    this.writeTasks(replaceById(this.readTasks(), updated));
+    this.writeTasks(replaceById(this.readTasks(), updated), 'Task updated');
     log('info', 'Task updated', { taskId });
     return updated;
   }
@@ -104,7 +110,7 @@ export class TaskService {
   /** Deletes a task and returns the removed entity. */
   delete(taskId: string): Task {
     const task = this.get(taskId);
-    this.writeTasks(removeById(this.readTasks(), taskId));
+    this.writeTasks(removeById(this.readTasks(), taskId), 'Task deleted');
     log('info', 'Task deleted', { taskId });
     return task;
   }
@@ -112,15 +118,36 @@ export class TaskService {
   /** Replaces every stored task with the provided collection. */
   replaceAll(tasks: Task[]): void {
     this.assertImportedTasks(tasks);
-    this.writeTasks(tasks);
+    this.writeTasks(tasks, 'Task collection replaced');
     log('info', 'Task collection replaced', { count: tasks.length });
   }
 
   /** Restores one deleted task into the current collection. */
   restoreDeletedTask(task: Task): void {
     this.assertImportedTasks([task]);
-    this.writeTasks([...this.readTasks(), task]);
+    this.writeTasks([...this.readTasks(), task], 'Deleted task restored');
     log('info', 'Task restored', { taskId: task.id });
+  }
+
+  /** Returns the current snapshot history, newest first. */
+  listBackups(): TaskBackupRecord[] {
+    return this.readBackups();
+  }
+
+  /** Restores one saved snapshot by its zero-based position in the history. */
+  restoreBackup(index: number): TaskBackupRecord {
+    const backups = this.readBackups();
+    const snapshot = backups[index];
+    if (!snapshot) {
+      throw new Error('Backup snapshot could not be restored.');
+    }
+
+    this.writeTasks(snapshot.items, 'Backup snapshot restored');
+    log('info', 'Task backup restored', {
+      capturedAt: snapshot.capturedAt,
+      count: snapshot.items.length,
+    });
+    return snapshot;
   }
 
   /** Converts parsing and storage failures into explicit diagnostic errors. */
@@ -143,7 +170,7 @@ export class TaskService {
   }
 
   /** Serializes tasks using the current storage schema version. */
-  private writeTasks(tasks: Task[]): void {
+  private writeTasks(tasks: Task[], backupLabel: string): void {
     const collection: StoredCollection<Task> = { version: STORAGE_VERSION, items: tasks };
     try {
       this.storage.write(STORAGE_KEY, JSON.stringify(collection));
@@ -152,6 +179,14 @@ export class TaskService {
         reason: error instanceof Error ? error.message : 'Unknown storage error',
       });
       throw new Error('Your task changes could not be saved. Check browser storage and try again.');
+    }
+
+    try {
+      this.writeBackupSnapshot(tasks, backupLabel);
+    } catch (error) {
+      log('warning', 'Task backup history could not be updated', {
+        reason: error instanceof Error ? error.message : 'Unknown backup error',
+      });
     }
   }
 
@@ -172,6 +207,43 @@ export class TaskService {
         throw new Error(`Imported task at index ${index} is not valid.`);
       }
     });
+  }
+
+  /** Returns the most recent backup snapshots, newest first. */
+  private readBackups(): TaskBackupRecord[] {
+    const raw = this.storage.read(BACKUP_STORAGE_KEY);
+    if (!raw) return [];
+
+    try {
+      const collection = JSON.parse(raw) as StoredCollection<TaskBackupRecord>;
+      if (collection.version !== STORAGE_VERSION || !Array.isArray(collection.items)) {
+        throw new Error('Unsupported or malformed backup history.');
+      }
+
+      return collection.items.filter(isBackupRecord);
+    } catch (error) {
+      log('warning', 'Task backup history could not be read', {
+        reason: error instanceof Error ? error.message : 'Unknown parsing error',
+      });
+      return [];
+    }
+  }
+
+  /** Prepends one backup snapshot and keeps the newest entries within the limit. */
+  private writeBackupSnapshot(tasks: Task[], backupLabel: string): void {
+    const snapshot: TaskBackupRecord = {
+      capturedAt: this.now(),
+      label: backupLabel,
+      items: tasks,
+    };
+
+    const nextBackups = [snapshot, ...this.readBackups()].slice(0, BACKUP_LIMIT);
+    const collection: StoredCollection<TaskBackupRecord> = {
+      version: STORAGE_VERSION,
+      items: nextBackups,
+    };
+
+    this.storage.write(BACKUP_STORAGE_KEY, JSON.stringify(collection));
   }
 }
 
@@ -223,5 +295,18 @@ function isImportedTask(value: unknown): value is Task {
     TASK_PRIORITIES.includes(record.priority as (typeof TASK_PRIORITIES)[number]) &&
     typeof record.createdAt === 'string' &&
     typeof record.updatedAt === 'string'
+  );
+}
+
+/** Checks whether an unknown value matches the saved backup record shape. */
+function isBackupRecord(value: unknown): value is TaskBackupRecord {
+  if (typeof value !== 'object' || value === null) return false;
+
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.capturedAt === 'string' &&
+    typeof record.label === 'string' &&
+    Array.isArray(record.items) &&
+    record.items.every(isImportedTask)
   );
 }

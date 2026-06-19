@@ -11,6 +11,17 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-06-19
+
+### Added
+
+- Recent backup snapshots stored after each write, with direct restore actions in the UI.
+- Backup history coverage in the browser and service test suites.
+
+### Changed
+
+- README now documents backup history and the recovery flow.
+
 ## [0.7.0] - 2026-06-19
 
 ### Added

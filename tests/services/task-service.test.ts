@@ -6,6 +6,7 @@
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
+import { BACKUP_STORAGE_KEY } from '../../src/config/app-config';
 import {
   TaskNotFoundError,
   TaskService,
@@ -50,6 +51,22 @@ describe('TaskService', () => {
     const created = service.create({ title: 'Temporary' });
     expect(service.delete('task-1')).toEqual(created);
     expect(service.list()).toEqual([]);
+  });
+
+  it('stores and restores recent backup snapshots', () => {
+    service.create({ title: 'First snapshot' });
+    timestamp = '2026-06-18T12:10:00.000Z';
+    service.update('task-1', { title: 'Second snapshot' });
+
+    const backups = service.listBackups();
+    expect(backups).toHaveLength(2);
+    expect(backups[0].label).toBe('Task updated');
+    expect(backups[0].items[0].title).toBe('Second snapshot');
+
+    const restored = service.restoreBackup(1);
+    expect(restored.label).toBe('Task created');
+    expect(service.list()[0].title).toBe('First snapshot');
+    expect(service.listBackups()).toHaveLength(3);
   });
 
   it('filters tasks by fields and case-insensitive text', () => {
@@ -129,5 +146,19 @@ describe('TaskService', () => {
     const storage = new MemoryStorage();
     storage.write('typed-task-manager.tasks', '{not-json');
     expect(() => new TaskService(storage).list()).toThrow('Saved tasks could not be loaded');
+  });
+
+  it('treats malformed backup history as empty rather than blocking task reads', () => {
+    const storage = new MemoryStorage();
+    storage.write(BACKUP_STORAGE_KEY, '{not-json');
+    const backupSafeService = new TaskService(
+      storage,
+      () => 'task-1',
+      () => timestamp,
+    );
+
+    expect(backupSafeService.listBackups()).toEqual([]);
+    expect(() => backupSafeService.create({ title: 'Recovered task' })).not.toThrow();
+    expect(backupSafeService.listBackups()).toHaveLength(1);
   });
 });

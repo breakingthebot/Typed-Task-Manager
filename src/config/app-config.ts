@@ -7,7 +7,9 @@
 
 export const APP_NAME = 'Typed Task Manager';
 export const STORAGE_KEY = 'typed-task-manager.tasks';
+export const BACKUP_STORAGE_KEY = 'typed-task-manager.backups';
 export const STORAGE_VERSION = 1;
+export const BACKUP_LIMIT = 5;
 export const MAX_TITLE_LENGTH = 120;
 export const MAX_DESCRIPTION_LENGTH = 1000;
 

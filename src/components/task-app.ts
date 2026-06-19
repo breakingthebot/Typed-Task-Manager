@@ -7,9 +7,11 @@
 
 import { APP_NAME, STORAGE_VERSION } from '../config/app-config';
 import type { Task, TaskFilters, TaskStatus } from '../models/task';
+import type { TaskBackupRecord } from '../models/task-backup';
 import { TaskNotFoundError, TaskValidationError, type TaskService } from '../services/task-service';
 import { log } from '../utils/logger';
 import { formatTaskTimestamp } from '../utils/date-format';
+import { createTaskBackupHistory } from './task-backup-history';
 import { createTaskDataTools } from './task-data-tools';
 import { createTaskFilters } from './task-filters';
 import { createTaskForm, type TaskFormMode, type TaskFormValues } from './task-form';
@@ -26,6 +28,7 @@ interface TaskAppState {
   loadError: string;
   dataErrors: string[];
   dataText: string;
+  backups: TaskBackupRecord[];
   toast: { message: string; undoLabel: string } | null;
   deletedTask: Task | null;
 }
@@ -54,6 +57,7 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     loadError: '',
     dataErrors: [],
     dataText: '',
+    backups: [],
     toast: null,
     deletedTask: null,
   };
@@ -71,11 +75,13 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
   function refreshTasks(statusMessage: string): void {
     try {
       state.tasks = taskService.list(state.filters);
+      state.backups = taskService.listBackups();
       state.loadError = '';
       state.statusMessage = statusMessage;
       render();
     } catch (error) {
       state.tasks = [];
+      state.backups = [];
       state.loadError = getUserMessage(error, 'Tasks could not be loaded.');
       state.statusMessage = 'Storage needs attention before tasks can be used.';
       render();
@@ -169,6 +175,17 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     taskService.restoreDeletedTask(restoredTask);
     state.statusMessage = `Restored "${restoredTask.title}".`;
     refreshTasks(state.statusMessage);
+  }
+
+  /** Restores one backup snapshot and refreshes the board. */
+  function handleRestoreBackup(index: number): void {
+    try {
+      const backup = taskService.restoreBackup(index);
+      refreshTasks(`Restored backup from ${formatTaskTimestamp(backup.capturedAt)}.`);
+    } catch (error) {
+      state.statusMessage = getUserMessage(error, 'Backup snapshot could not be restored.');
+      render();
+    }
   }
 
   /** Exports the full task collection into the JSON panel. */
@@ -353,10 +370,15 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
       onInput: handleDataInput,
     });
 
+    const backupPanel = createTaskBackupHistory({
+      backups: state.backups,
+      onRestore: handleRestoreBackup,
+    });
+
     content.append(formPanel, boardPanel);
     shell.append(hero, feedback);
     if (toast) shell.append(toast);
-    shell.append(content, dataPanel);
+    shell.append(content, dataPanel, backupPanel);
     return shell;
   }
 
