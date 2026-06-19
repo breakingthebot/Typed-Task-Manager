@@ -1,6 +1,6 @@
 /**
  * src/components/task-list.ts
- * Renders the visible task cards, empty state, and quick task actions.
+ * Renders grouped status columns, task cards, and empty board states.
  * Connects to: models/task.ts, components/task-app.ts, utils/date-format.ts
  * Created: 2026-06-18
  */
@@ -16,7 +16,7 @@ interface TaskListOptions {
   onStatusChange(taskId: string, status: TaskStatus): void;
 }
 
-/** Creates the task list or an appropriate empty/error state. */
+/** Creates grouped task sections or an appropriate empty/error state. */
 export function createTaskList(options: TaskListOptions): HTMLElement {
   const wrapper = document.createElement('div');
   wrapper.className = 'task-list';
@@ -36,15 +36,59 @@ export function createTaskList(options: TaskListOptions): HTMLElement {
     return wrapper;
   }
 
+  const board = document.createElement('div');
+  board.className = 'task-board-grid';
+
+  TASK_STATUSES.forEach((status) => {
+    board.append(createStatusColumn(status, options.tasks, options));
+  });
+
+  wrapper.append(board);
+  return wrapper;
+}
+
+/** Creates one status column and the cards currently visible within it. */
+function createStatusColumn(
+  status: TaskStatus,
+  tasks: Task[],
+  options: TaskListOptions,
+): HTMLElement {
+  const section = document.createElement('section');
+  section.className = `task-column task-column-${status}`;
+  section.setAttribute('aria-label', `${status} tasks`);
+
+  const sectionHeader = document.createElement('div');
+  sectionHeader.className = 'task-column-header';
+
+  const title = document.createElement('h3');
+  title.textContent = formatStatusHeading(status);
+
+  const count = document.createElement('span');
+  count.className = 'task-column-count';
+
+  const tasksForStatus = tasks.filter((task) => task.status === status);
+  count.textContent = `${tasksForStatus.length}`;
+
+  sectionHeader.append(title, count);
+  section.append(sectionHeader);
+
+  if (tasksForStatus.length === 0) {
+    const emptyMessage = document.createElement('p');
+    emptyMessage.className = 'task-column-empty';
+    emptyMessage.textContent = 'No tasks in this section.';
+    section.append(emptyMessage);
+    return section;
+  }
+
   const list = document.createElement('ul');
   list.className = 'task-card-list';
 
-  options.tasks.forEach((task) => {
+  tasksForStatus.forEach((task) => {
     list.append(createTaskCard(task, options));
   });
 
-  wrapper.append(list);
-  return wrapper;
+  section.append(list);
+  return section;
 }
 
 /** Creates one task card with status, timestamps, and quick actions. */
@@ -57,12 +101,12 @@ function createTaskCard(task: Task, options: TaskListOptions): HTMLElement {
 
   const titleGroup = document.createElement('div');
 
-  const title = document.createElement('h3');
+  const title = document.createElement('h4');
   title.textContent = task.title;
 
   const meta = document.createElement('p');
   meta.className = 'task-meta';
-  meta.textContent = `Priority ${task.priority} · Updated ${formatTaskTimestamp(task.updatedAt)}`;
+  meta.textContent = `Priority ${task.priority} - Updated ${formatTaskTimestamp(task.updatedAt)}`;
 
   titleGroup.append(title, meta);
 
@@ -138,4 +182,11 @@ function createEmptyState(titleText: string, copyText: string): HTMLElement {
 
   wrapper.append(title, copy);
   return wrapper;
+}
+
+/** Converts a task status slug into the section heading used on the board. */
+function formatStatusHeading(status: TaskStatus): string {
+  if (status === 'todo') return 'To do';
+  if (status === 'in-progress') return 'In progress';
+  return 'Done';
 }

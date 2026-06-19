@@ -7,9 +7,17 @@
 
 export const TASK_STATUSES = ['todo', 'in-progress', 'done'] as const;
 export const TASK_PRIORITIES = ['low', 'medium', 'high'] as const;
+export const TASK_SORT_OPTIONS = [
+  'updatedAt-desc',
+  'updatedAt-asc',
+  'priority-desc',
+  'priority-asc',
+  'title-asc',
+] as const;
 
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 export type TaskPriority = (typeof TASK_PRIORITIES)[number];
+export type TaskSortOption = (typeof TASK_SORT_OPTIONS)[number];
 
 export interface Task {
   id: string;
@@ -39,6 +47,7 @@ export interface TaskFilters {
   query?: string;
   status?: TaskStatus;
   priority?: TaskPriority;
+  sort?: TaskSortOption;
 }
 
 export interface ValidationIssue {

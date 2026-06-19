@@ -11,6 +11,20 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-18
+
+### Added
+
+- Grouped task board columns for `To do`, `In progress`, and `Done`.
+- Visible board counters for overall tasks and per-status totals.
+- Sort controls for newest, oldest, priority, and title ordering.
+- Browser tests covering grouped board layout, counters, and sorting behavior.
+
+### Changed
+
+- Task listing now supports explicit board sort options.
+- README now documents grouped board behavior and sort controls.
+
 ## [0.2.0] - 2026-06-18
 
 ### Added

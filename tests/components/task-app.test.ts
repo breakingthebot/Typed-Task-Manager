@@ -69,6 +69,41 @@ describe('task app', () => {
     createTaskApp(root, new TaskService(storage)).mount();
     expect(root.textContent).toContain('Saved tasks could not be loaded.');
   });
+
+  it('groups tasks by status, shows counters, and applies board sorting', () => {
+    const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
+    const root = document.querySelector<HTMLElement>('#app');
+
+    if (!root) throw new Error('Missing app root in test.');
+
+    createTaskApp(root, service).mount();
+
+    setInputValue('Title', 'Zulu item');
+    setSelectValue('Status', 'todo');
+    clickButton('Add task');
+
+    setInputValue('Title', 'Alpha item');
+    setSelectValue('Status', 'todo');
+    clickButton('Add task');
+
+    setInputValue('Title', 'Beta item');
+    setSelectValue('Status', 'in-progress');
+    clickButton('Add task');
+
+    expect(root.textContent).toContain('Visible tasks3');
+    expect(root.textContent).toContain('To do2');
+    expect(root.textContent).toContain('In progress1');
+    expect(root.textContent).toContain('Done0');
+
+    changeSelectValue('Sort', 'title-asc');
+
+    const todoColumn = getBoardColumn('To do');
+    const todoTitles = Array.from(todoColumn.querySelectorAll('h4')).map((node) =>
+      node.textContent?.trim(),
+    );
+
+    expect(todoTitles).toEqual(['Alpha item', 'Zulu item']);
+  });
 });
 
 /** Creates deterministic task IDs so UI tests can assert stable updates. */
@@ -101,6 +136,15 @@ function setTextAreaValue(labelText: string, value: string): void {
   textArea.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
+/** Changes one select chosen by its visible field label. */
+function setSelectValue(labelText: string, value: string): void {
+  const label = findLabel(labelText);
+  const select = label.querySelector('select');
+  if (!select) throw new Error(`Select not found for label "${labelText}".`);
+  select.value = value;
+  select.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
 /** Clicks the first button whose text exactly matches the requested label. */
 function clickButton(labelText: string): void {
   const button = Array.from(document.querySelectorAll('button')).find(
@@ -120,6 +164,17 @@ function changeSelectValue(labelText: string, value: string): void {
   }
   select.value = value;
   select.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+/** Returns one grouped board column by its visible heading. */
+function getBoardColumn(headingText: string): HTMLElement {
+  const column = Array.from(document.querySelectorAll('.task-column')).find((candidate) =>
+    candidate.textContent?.includes(headingText),
+  );
+  if (!(column instanceof HTMLElement)) {
+    throw new Error(`Task column "${headingText}" not found.`);
+  }
+  return column;
 }
 
 /** Locates one field label by its visible text content. */

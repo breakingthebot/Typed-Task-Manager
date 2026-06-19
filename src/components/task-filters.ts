@@ -5,7 +5,12 @@
  * Created: 2026-06-18
  */
 
-import { TASK_PRIORITIES, TASK_STATUSES, type TaskFilters } from '../models/task';
+import {
+  TASK_PRIORITIES,
+  TASK_SORT_OPTIONS,
+  TASK_STATUSES,
+  type TaskFilters,
+} from '../models/task';
 
 interface TaskFilterOptions {
   filters: TaskFilters;
@@ -25,7 +30,7 @@ export function createTaskFilters(options: TaskFilterOptions): HTMLElement {
 
   const copy = document.createElement('p');
   copy.className = 'panel-copy';
-  copy.textContent = 'Search by text or narrow the board by status and priority.';
+  copy.textContent = 'Search by text, narrow by status or priority, and control the board order.';
 
   heading.append(title, copy);
 
@@ -51,23 +56,29 @@ export function createTaskFilters(options: TaskFilterOptions): HTMLElement {
       ...TASK_PRIORITIES.map((priority) => ({ value: priority, label: startCase(priority) })),
     ],
   );
+  const sortField = createFilterSelect('filter-sort', 'Sort', options.filters.sort, [
+    ...TASK_SORT_OPTIONS.map((sort) => ({ value: sort, label: getSortLabel(sort) })),
+  ]);
 
   const syncFilters = (): void => {
     options.onChange({
       query: queryField.value.trim() || undefined,
       status: (statusField.value || undefined) as TaskFilters['status'],
       priority: (priorityField.value || undefined) as TaskFilters['priority'],
+      sort: sortField.value as TaskFilters['sort'],
     });
   };
 
   queryField.addEventListener('input', syncFilters);
   statusField.addEventListener('change', syncFilters);
   priorityField.addEventListener('change', syncFilters);
+  sortField.addEventListener('change', syncFilters);
 
   controls.append(
     wrapFilter('Search', queryField),
     wrapFilter('Status', statusField),
     wrapFilter('Priority', priorityField),
+    wrapFilter('Sort', sortField),
   );
   wrapper.append(heading, controls);
   return wrapper;
@@ -131,4 +142,13 @@ function startCase(value: string): string {
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ');
+}
+
+/** Converts an internal task sort option into a readable UI label. */
+function getSortLabel(value: string): string {
+  if (value === 'updatedAt-desc') return 'Newest first';
+  if (value === 'updatedAt-asc') return 'Oldest first';
+  if (value === 'priority-desc') return 'Highest priority first';
+  if (value === 'priority-asc') return 'Lowest priority first';
+  return 'Title A to Z';
 }

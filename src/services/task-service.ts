@@ -7,8 +7,8 @@
 
 import { STORAGE_KEY, STORAGE_VERSION } from '../config/app-config';
 import type { StoredCollection, StorageAdapter } from '../models/storage';
-import type { Task, TaskDraft, TaskFilters, TaskUpdate } from '../models/task';
-import { filterBy, removeById, replaceById, sortBy } from '../utils/collection';
+import type { Task, TaskDraft, TaskFilters, TaskPriority, TaskUpdate } from '../models/task';
+import { filterBy, removeById, replaceById } from '../utils/collection';
 import { log } from '../utils/logger';
 import { sanitizeText, validateTaskInput } from '../utils/task-validation';
 
@@ -48,7 +48,7 @@ export class TaskService {
       );
     }
 
-    return sortBy(tasks, 'updatedAt', 'desc');
+    return sortTasks(tasks, filters.sort ?? 'updatedAt-desc');
   }
 
   /** Returns one task or throws when its ID does not exist. */
@@ -138,4 +138,37 @@ export class TaskService {
     const result = validateTaskInput(input, requireTitle);
     if (!result.isValid) throw new TaskValidationError(result.issues.map(({ message }) => message));
   }
+}
+
+const PRIORITY_RANK: Record<TaskPriority, number> = {
+  low: 0,
+  medium: 1,
+  high: 2,
+};
+
+/** Sorts tasks using the active board sort mode. */
+function sortTasks(tasks: Task[], sort: TaskFilters['sort']): Task[] {
+  const sorted = [...tasks];
+
+  if (sort === 'updatedAt-asc') {
+    return sorted.sort((left, right) => left.updatedAt.localeCompare(right.updatedAt));
+  }
+
+  if (sort === 'priority-desc') {
+    return sorted.sort(
+      (left, right) => PRIORITY_RANK[right.priority] - PRIORITY_RANK[left.priority],
+    );
+  }
+
+  if (sort === 'priority-asc') {
+    return sorted.sort(
+      (left, right) => PRIORITY_RANK[left.priority] - PRIORITY_RANK[right.priority],
+    );
+  }
+
+  if (sort === 'title-asc') {
+    return sorted.sort((left, right) => left.title.localeCompare(right.title));
+  }
+
+  return sorted.sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
 }

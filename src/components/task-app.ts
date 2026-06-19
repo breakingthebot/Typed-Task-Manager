@@ -40,7 +40,7 @@ const DEFAULT_FORM_VALUES: TaskFormValues = {
 export function createTaskApp(root: HTMLElement, taskService: TaskService): TaskApp {
   const state: TaskAppState = {
     tasks: [],
-    filters: {},
+    filters: { sort: 'updatedAt-desc' },
     mode: 'create',
     editingTaskId: null,
     formValues: { ...DEFAULT_FORM_VALUES },
@@ -190,10 +190,7 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
 
     const stats = document.createElement('div');
     stats.className = 'hero-stats';
-    stats.append(
-      createStat('Visible tasks', String(state.tasks.length)),
-      createStat('Last refresh', formatTaskTimestamp(new Date().toISOString())),
-    );
+    stats.append(...createBoardStats(state.tasks));
 
     hero.append(heading, summary, stats);
 
@@ -265,6 +262,27 @@ function createStat(label: string, value: string): HTMLElement {
 
   wrapper.append(statLabel, statValue);
   return wrapper;
+}
+
+/** Builds the current visible task counters shown in the hero header. */
+function createBoardStats(tasks: Task[]): HTMLElement[] {
+  const counts: Record<TaskStatus, number> = {
+    todo: 0,
+    'in-progress': 0,
+    done: 0,
+  };
+
+  tasks.forEach((task) => {
+    counts[task.status] += 1;
+  });
+
+  return [
+    createStat('Visible tasks', String(tasks.length)),
+    createStat('To do', String(counts.todo)),
+    createStat('In progress', String(counts['in-progress'])),
+    createStat('Done', String(counts.done)),
+    createStat('Last refresh', formatTaskTimestamp(new Date().toISOString())),
+  ];
 }
 
 /** Normalizes domain and storage errors into a user-facing message. */

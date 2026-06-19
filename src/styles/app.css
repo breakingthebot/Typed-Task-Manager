@@ -172,6 +172,43 @@ select:focus-visible {
   gap: 1rem;
 }
 
+.task-board-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.task-column {
+  display: grid;
+  gap: 0.85rem;
+  align-content: start;
+  padding: 1rem;
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(31, 42, 42, 0.08);
+}
+
+.task-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.task-column-count {
+  min-width: 2rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  text-align: center;
+  background: rgba(31, 42, 42, 0.08);
+  color: var(--muted);
+}
+
+.task-column-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
 .field {
   display: grid;
   gap: 0.45rem;
@@ -311,6 +348,10 @@ select:focus-visible {
   .content-grid {
     display: grid;
     grid-template-columns: minmax(20rem, 24rem) minmax(0, 1fr);
+  }
+
+  .task-board-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

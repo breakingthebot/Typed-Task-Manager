@@ -7,7 +7,7 @@ Created: 2026-06-18
 
 # Typed Task Manager
 
-A browser-based task manager built with strict TypeScript, modular UI components, and a testable CRUD domain.
+A browser-based task manager built with strict TypeScript, modular UI components, grouped task board sections, and a testable CRUD domain.
 
 ## Stack
 
@@ -59,7 +59,7 @@ Not deployed.
 
 This build starts with a typed domain core and then layers a framework-free browser UI on top of it. Task contracts live in `src/models`, reusable helpers and validation live in `src/utils`, persistence and CRUD behavior live in `src/services`, and the browser rendering code is split across focused files in `src/components`. The task service still depends on a storage adapter instead of direct browser access, which keeps the domain testable and the UI thin.
 
-Every write validates and normalizes input first. Stored data carries a schema version so malformed or incompatible saved data fails explicitly instead of silently producing incorrect results. The UI adds loading, empty, validation, and storage-error states so the app still explains what is happening when something goes wrong.
+Every write validates and normalizes input first. Stored data carries a schema version so malformed or incompatible saved data fails explicitly instead of silently producing incorrect results. The UI adds loading, empty, validation, and storage-error states so the app still explains what is happening when something goes wrong. The board is now grouped into status columns with visible counters and sort controls, which makes it easier to scan current work without changing the underlying CRUD service.
 
 ## Testing
 
@@ -75,6 +75,7 @@ npm run check
 - Clearing local site data removes stored tasks.
 - Tasks are persisted in browser `localStorage`.
 - The app is fully client-side and makes no network requests.
+- The board can be sorted by recency, priority, or title.
 - See [CHANGELOG.md](CHANGELOG.md) for iteration history.
 
 ## License
