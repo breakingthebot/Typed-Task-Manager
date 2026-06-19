@@ -11,6 +11,17 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-19
+
+### Added
+
+- Task duplication action on task cards that opens a prefilled create draft.
+- Browser coverage for the duplicate flow.
+
+### Changed
+
+- README now documents task duplication alongside backup history and preferences.
+
 ## [0.9.0] - 2026-06-19
 
 ### Added

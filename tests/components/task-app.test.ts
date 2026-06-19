@@ -159,6 +159,36 @@ describe('task app', () => {
     expect(root.textContent).toContain('Keyboard task');
   });
 
+  it('duplicates an existing task into a new create draft', () => {
+    const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
+    const root = document.querySelector<HTMLElement>('#app');
+
+    if (!root) throw new Error('Missing app root in test.');
+
+    createTaskApp(root, service).mount();
+
+    setInputValue('Title', 'Source task');
+    setTextAreaValue('Description', 'Keep this content');
+    setSelectValueById('task-status', 'in-progress');
+    setSelectValueById('task-priority', 'high');
+    clickButton('Add task');
+
+    clickButton('Duplicate');
+
+    expect(root.textContent).toContain('Duplicating "Source task".');
+    expect(getInputValue('Title')).toBe('Source task');
+    expect(getTextareaValueById('task-description')).toBe('Keep this content');
+    expect(getSelectValueById('task-status')).toBe('in-progress');
+    expect(getSelectValueById('task-priority')).toBe('high');
+
+    setInputValue('Title', 'Cloned task');
+    clickButton('Add task');
+
+    expect(root.textContent).toContain('Task created.');
+    expect(root.textContent).toContain('Source task');
+    expect(root.textContent).toContain('Cloned task');
+  });
+
   it('shows backup history and restores a saved snapshot', () => {
     const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
     const root = document.querySelector<HTMLElement>('#app');
@@ -288,6 +318,25 @@ function getAriaSelectValue(labelText: string): string {
   return select.value;
 }
 
+/** Reads the current value of one select control by its DOM ID. */
+function getSelectValueById(id: string): string {
+  const select = document.getElementById(id);
+  if (!(select instanceof HTMLSelectElement)) {
+    throw new Error(`Select "${id}" not found.`);
+  }
+  return select.value;
+}
+
+/** Changes one select control by its DOM ID. */
+function setSelectValueById(id: string, value: string): void {
+  const select = document.getElementById(id);
+  if (!(select instanceof HTMLSelectElement)) {
+    throw new Error(`Select "${id}" not found.`);
+  }
+  select.value = value;
+  select.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
 /** Clicks the first button whose text exactly matches the requested label. */
 function clickButton(labelText: string): void {
   const button = Array.from(document.querySelectorAll('button')).find(
@@ -311,6 +360,15 @@ function changeSelectValue(labelText: string, value: string): void {
 
 /** Reads the value of one textarea by ID. */
 function getTextareaValue(id: string): string {
+  const textArea = document.getElementById(id);
+  if (!(textArea instanceof HTMLTextAreaElement)) {
+    throw new Error(`Textarea "${id}" not found.`);
+  }
+  return textArea.value;
+}
+
+/** Reads the current value of one textarea by its DOM ID. */
+function getTextareaValueById(id: string): string {
   const textArea = document.getElementById(id);
   if (!(textArea instanceof HTMLTextAreaElement)) {
     throw new Error(`Textarea "${id}" not found.`);

@@ -140,6 +140,27 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     }
   }
 
+  /** Copies one task into the create form so it can be duplicated with edits. */
+  function handleDuplicate(taskId: string): void {
+    try {
+      const task = taskService.get(taskId);
+      state.mode = 'create';
+      state.editingTaskId = null;
+      state.formErrors = [];
+      state.formValues = {
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+      };
+      state.statusMessage = `Duplicating "${task.title}".`;
+      render();
+    } catch (error) {
+      state.statusMessage = getUserMessage(error, 'Task could not be duplicated.');
+      render();
+    }
+  }
+
   /** Removes one task from storage and refreshes the screen. */
   function handleDelete(taskId: string): void {
     try {
@@ -361,6 +382,7 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
         tasks: state.tasks,
         hasLoadError: Boolean(state.loadError),
         onEdit: handleEdit,
+        onDuplicate: handleDuplicate,
         onDelete: handleDelete,
         onStatusChange: handleStatusChange,
       }),

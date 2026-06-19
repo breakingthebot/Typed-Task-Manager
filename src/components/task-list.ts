@@ -12,6 +12,7 @@ interface TaskListOptions {
   tasks: Task[];
   hasLoadError: boolean;
   onEdit(taskId: string): void;
+  onDuplicate(taskId: string): void;
   onDelete(taskId: string): void;
   onStatusChange(taskId: string, status: TaskStatus): void;
 }
@@ -157,13 +158,19 @@ function createTaskCard(task: Task, options: TaskListOptions): HTMLElement {
   editButton.textContent = 'Edit';
   editButton.addEventListener('click', () => options.onEdit(task.id));
 
+  const duplicateButton = document.createElement('button');
+  duplicateButton.type = 'button';
+  duplicateButton.className = 'button button-secondary';
+  duplicateButton.textContent = 'Duplicate';
+  duplicateButton.addEventListener('click', () => options.onDuplicate(task.id));
+
   const deleteButton = document.createElement('button');
   deleteButton.type = 'button';
   deleteButton.className = 'button button-danger';
   deleteButton.textContent = 'Delete';
   deleteButton.addEventListener('click', () => options.onDelete(task.id));
 
-  buttonRow.append(editButton, deleteButton);
+  buttonRow.append(editButton, duplicateButton, deleteButton);
   footer.append(statusLabel, buttonRow);
   item.append(header, description, footer);
   return item;
