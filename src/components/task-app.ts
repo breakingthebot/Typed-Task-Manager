@@ -26,6 +26,8 @@ interface TaskAppState {
   loadError: string;
   dataErrors: string[];
   dataText: string;
+  toast: { message: string; undoLabel: string } | null;
+  deletedTask: Task | null;
 }
 
 interface TaskApp {
@@ -52,10 +54,15 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     loadError: '',
     dataErrors: [],
     dataText: '',
+    toast: null,
+    deletedTask: null,
   };
+
+  let undoTimerId: number | null = null;
 
   /** Mounts the app with an initial loading state before the first render. */
   function mount(): void {
+    root.addEventListener('keydown', handleKeyboardShortcut);
     renderLoadingState();
     refreshTasks('Loaded saved tasks.');
   }
@@ -125,9 +132,10 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
   /** Removes one task from storage and refreshes the screen. */
   function handleDelete(taskId: string): void {
     try {
-      taskService.delete(taskId);
+      const deletedTask = taskService.delete(taskId);
       if (state.editingTaskId === taskId) resetForm();
-      refreshTasks('Task deleted.');
+      showToast(`Deleted "${deletedTask.title}".`, 'Undo delete', deletedTask);
+      refreshTasks(`Deleted "${deletedTask.title}".`);
     } catch (error) {
       state.statusMessage = getUserMessage(error, 'Task could not be deleted.');
       render();
@@ -150,6 +158,17 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     resetForm();
     state.statusMessage = 'Create mode restored.';
     render();
+  }
+
+  /** Restores the most recently deleted task and clears the undo toast. */
+  function handleUndoDelete(): void {
+    if (!state.deletedTask) return;
+
+    const restoredTask = state.deletedTask;
+    clearToast();
+    taskService.restoreDeletedTask(restoredTask);
+    state.statusMessage = `Restored "${restoredTask.title}".`;
+    refreshTasks(state.statusMessage);
   }
 
   /** Exports the full task collection into the JSON panel. */
@@ -194,6 +213,44 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     state.dataText = value;
   }
 
+  /** Handles the most useful app-wide keyboard shortcuts. */
+  function handleKeyboardShortcut(event: KeyboardEvent): void {
+    if (event.defaultPrevented) return;
+
+    const isModifierShortcut = event.ctrlKey || event.metaKey;
+
+    if (isModifierShortcut && event.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      focusSearchField();
+      return;
+    }
+
+    if (isModifierShortcut && event.key.toLowerCase() === 's') {
+      event.preventDefault();
+      submitTaskForm();
+      return;
+    }
+
+    if (isModifierShortcut && event.key.toLowerCase() === 'z') {
+      if (!state.deletedTask) return;
+      event.preventDefault();
+      handleUndoDelete();
+      return;
+    }
+
+    if (event.key === 'Escape' && state.mode === 'edit') {
+      event.preventDefault();
+      handleCancelEdit();
+      return;
+    }
+
+    if (event.key === 'Escape' && state.toast) {
+      event.preventDefault();
+      clearToast();
+      render();
+    }
+  }
+
   /** Replaces the current screen with the full application shell. */
   function render(): void {
     root.replaceChildren(buildShell());
@@ -235,17 +292,26 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     summary.textContent =
       'Track work with typed task data, strict validation, and local-first persistence.';
 
+    const shortcuts = document.createElement('p');
+    shortcuts.className = 'shortcut-hint';
+    shortcuts.textContent =
+      'Shortcuts: Ctrl/Cmd+S save, Ctrl/Cmd+F search, Ctrl/Cmd+Z undo delete.';
+
     const stats = document.createElement('div');
     stats.className = 'hero-stats';
     stats.append(...createBoardStats(state.tasks));
 
-    hero.append(heading, summary, stats);
+    hero.append(heading, summary, shortcuts, stats);
 
     const feedback = document.createElement('p');
     feedback.className = state.loadError ? 'feedback error' : 'feedback';
     feedback.setAttribute('role', 'status');
     feedback.setAttribute('aria-live', 'polite');
     feedback.textContent = state.loadError || state.statusMessage;
+
+    const toast = state.toast
+      ? createToast(state.toast.message, state.toast.undoLabel, handleUndoDelete)
+      : null;
 
     const content = document.createElement('div');
     content.className = 'content-grid';
@@ -288,7 +354,9 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     });
 
     content.append(formPanel, boardPanel);
-    shell.append(hero, feedback, content, dataPanel);
+    shell.append(hero, feedback);
+    if (toast) shell.append(toast);
+    shell.append(content, dataPanel);
     return shell;
   }
 
@@ -298,6 +366,44 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     state.editingTaskId = null;
     state.formErrors = [];
     state.formValues = { ...DEFAULT_FORM_VALUES };
+  }
+
+  /** Shows a short-lived toast and optionally enables undo for a deleted task. */
+  function showToast(message: string, undoLabel: string, deletedTask: Task | null = null): void {
+    clearToast();
+    state.toast = { message, undoLabel };
+    state.deletedTask = deletedTask;
+
+    if (deletedTask) {
+      undoTimerId = window.setTimeout(() => {
+        clearToast();
+        render();
+      }, 6000);
+    }
+  }
+
+  /** Clears any active toast and undo timer. */
+  function clearToast(): void {
+    if (undoTimerId !== null) {
+      window.clearTimeout(undoTimerId);
+      undoTimerId = null;
+    }
+
+    state.toast = null;
+    state.deletedTask = null;
+  }
+
+  /** Focuses the search field to support fast keyboard navigation. */
+  function focusSearchField(): void {
+    const search = document.querySelector<HTMLInputElement>('#task-query');
+    search?.focus();
+    search?.select();
+  }
+
+  /** Submits the task form from the keyboard shortcut. */
+  function submitTaskForm(): void {
+    const form = document.querySelector<HTMLFormElement>('form.task-form');
+    form?.requestSubmit();
   }
 
   return { mount };
@@ -318,6 +424,31 @@ function createStat(label: string, value: string): HTMLElement {
 
   wrapper.append(statLabel, statValue);
   return wrapper;
+}
+
+/** Creates the dismissible toast shown after a task deletion. */
+function createToast(message: string, undoLabel: string, onUndo: () => void): HTMLElement {
+  const toast = document.createElement('section');
+  toast.className = 'toast';
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+
+  const copy = document.createElement('p');
+  copy.className = 'toast-copy';
+  copy.textContent = message;
+
+  const buttonRow = document.createElement('div');
+  buttonRow.className = 'button-row';
+
+  const undoButton = document.createElement('button');
+  undoButton.type = 'button';
+  undoButton.className = 'button button-secondary';
+  undoButton.textContent = undoLabel;
+  undoButton.addEventListener('click', onUndo);
+
+  buttonRow.append(undoButton);
+  toast.append(copy, buttonRow);
+  return toast;
 }
 
 /** Builds the current visible task counters shown in the hero header. */

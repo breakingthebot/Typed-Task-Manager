@@ -107,8 +107,14 @@ select:focus-visible {
 .task-description,
 .task-meta,
 .feedback,
-.empty-state p {
+.empty-state p,
+.shortcut-hint {
   color: var(--muted);
+}
+
+.shortcut-hint {
+  margin: 0.75rem 0 0;
+  font-size: 0.92rem;
 }
 
 .hero-stats,
@@ -158,6 +164,22 @@ select:focus-visible {
   background: rgba(170, 63, 45, 0.1);
   color: #7f2417;
   border: 1px solid rgba(170, 63, 45, 0.2);
+}
+
+.toast {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  background: rgba(14, 111, 92, 0.12);
+  border: 1px solid rgba(14, 111, 92, 0.22);
+}
+
+.toast-copy {
+  margin: 0;
+  color: var(--primary-strong);
 }
 
 .content-grid {

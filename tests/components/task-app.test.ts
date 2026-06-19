@@ -132,6 +132,31 @@ describe('task app', () => {
     expect(importRoot.textContent).toContain('Task data imported.');
     expect(importRoot.textContent).toContain('Move this task');
   });
+
+  it('supports keyboard shortcuts and undoing a delete', () => {
+    const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
+    const root = document.querySelector<HTMLElement>('#app');
+
+    if (!root) throw new Error('Missing app root in test.');
+
+    createTaskApp(root, service).mount();
+
+    dispatchShortcut(root, 'f', true);
+    expect((document.activeElement as HTMLElement | null)?.id).toBe('task-query');
+
+    setInputValue('Title', 'Keyboard task');
+    dispatchShortcut(root, 's', true);
+    expect(root.textContent).toContain('Task created.');
+    expect(root.textContent).toContain('Keyboard task');
+
+    clickButton('Delete');
+    expect(root.textContent).toContain('Deleted "Keyboard task".');
+    expect(root.textContent).toContain('Undo delete');
+
+    dispatchShortcut(root, 'z', true);
+    expect(root.textContent).toContain('Restored "Keyboard task".');
+    expect(root.textContent).toContain('Keyboard task');
+  });
 });
 
 /** Creates deterministic task IDs so UI tests can assert stable updates. */
@@ -211,6 +236,18 @@ function getTextareaValue(id: string): string {
     throw new Error(`Textarea "${id}" not found.`);
   }
   return textArea.value;
+}
+
+/** Dispatches one keyboard shortcut event from the app root. */
+function dispatchShortcut(target: HTMLElement, key: string, ctrlKey: boolean): void {
+  target.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      bubbles: true,
+      ctrlKey,
+      metaKey: ctrlKey,
+      key,
+    }),
+  );
 }
 
 /** Returns one grouped board column by its visible heading. */

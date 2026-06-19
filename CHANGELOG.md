@@ -11,7 +11,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
-## [0.6.0] - 2026-06-19
+## [0.7.0] - 2026-06-19
 
 ### Added
 
@@ -19,8 +19,10 @@ All notable changes to this project are documented here.
 - Visible board counters for overall tasks and per-status totals.
 - Sort controls for newest, oldest, priority, and title ordering.
 - JSON import/export tooling for moving task collections between browsers.
+- Delete undo toast and keyboard shortcuts for save, search, and undo actions.
 - Browser tests covering grouped board layout, counters, and sorting behavior.
 - Browser tests covering task import and export round-trips.
+- Browser tests covering shortcut handling and delete undo behavior.
 
 ### Changed
 

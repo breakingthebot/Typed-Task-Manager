@@ -116,6 +116,13 @@ export class TaskService {
     log('info', 'Task collection replaced', { count: tasks.length });
   }
 
+  /** Restores one deleted task into the current collection. */
+  restoreDeletedTask(task: Task): void {
+    this.assertImportedTasks([task]);
+    this.writeTasks([...this.readTasks(), task]);
+    log('info', 'Task restored', { taskId: task.id });
+  }
+
   /** Converts parsing and storage failures into explicit diagnostic errors. */
   private readTasks(): Task[] {
     const raw = this.storage.read(STORAGE_KEY);

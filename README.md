@@ -7,7 +7,7 @@ Created: 2026-06-18
 
 # Typed Task Manager
 
-A browser-based task manager built with strict TypeScript, modular UI components, grouped task board sections, import/export tooling, and a testable CRUD domain.
+A browser-based task manager built with strict TypeScript, modular UI components, grouped task board sections, import/export tooling, delete undo, and a testable CRUD domain.
 
 ## Stack
 
@@ -63,6 +63,8 @@ Every write validates and normalizes input first. Stored data carries a schema v
 
 This iteration adds a JSON import/export panel so you can move task data between browsers without touching the storage layer. That keeps the codebase modular while still making backup and transfer flows explicit in the UI.
 
+This iteration also adds keyboard shortcuts and delete undo, which reduces accidental data loss and keeps the main actions fast for power users.
+
 ## Testing
 
 Tests mirror the source structure and now cover both domain behavior and core browser interaction flows including create, edit, filter, and delete actions.
@@ -79,6 +81,7 @@ npm run check
 - The app is fully client-side and makes no network requests.
 - The board can be sorted by recency, priority, or title.
 - The app can export and import the full task collection as JSON.
+- The app supports delete undo and keyboard shortcuts for search, save, and undo.
 - See [CHANGELOG.md](CHANGELOG.md) for iteration history.
 
 ## License
