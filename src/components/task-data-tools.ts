@@ -9,9 +9,9 @@ interface TaskDataToolsOptions {
   exportedValue: string;
   statusMessage: string;
   errors: string[];
-  onExport(): void;
-  onImport(value: string): void;
-  onInput(value: string): void;
+  onExport: () => void;
+  onImport: (value: string) => void;
+  onInput: (value: string) => void;
 }
 
 /** Creates the data tools panel with a textarea and import/export actions. */

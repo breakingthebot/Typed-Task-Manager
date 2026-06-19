@@ -107,6 +107,14 @@ describe('TaskService', () => {
         },
       ]),
     ).toThrow('Imported task at index 0 is not valid.');
+    expect(() =>
+      service.replaceAll([
+        {
+          ...imported[0],
+          status: 'blocked' as unknown as (typeof imported)[number]['status'],
+        },
+      ]),
+    ).toThrow('Imported task at index 0 is not valid.');
   });
 
   it('rejects invalid input with a user-safe domain error', () => {

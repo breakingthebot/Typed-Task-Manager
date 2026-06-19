@@ -7,7 +7,15 @@
 
 import { STORAGE_KEY, STORAGE_VERSION } from '../config/app-config';
 import type { StoredCollection, StorageAdapter } from '../models/storage';
-import type { Task, TaskDraft, TaskFilters, TaskPriority, TaskUpdate } from '../models/task';
+import {
+  TASK_PRIORITIES,
+  TASK_STATUSES,
+  type Task,
+  type TaskDraft,
+  type TaskFilters,
+  type TaskPriority,
+  type TaskUpdate,
+} from '../models/task';
 import { filterBy, removeById, replaceById } from '../utils/collection';
 import { log } from '../utils/logger';
 import { sanitizeText, validateTaskInput } from '../utils/task-validation';
@@ -203,7 +211,9 @@ function isImportedTask(value: unknown): value is Task {
     typeof record.title === 'string' &&
     typeof record.description === 'string' &&
     typeof record.status === 'string' &&
+    TASK_STATUSES.includes(record.status as (typeof TASK_STATUSES)[number]) &&
     typeof record.priority === 'string' &&
+    TASK_PRIORITIES.includes(record.priority as (typeof TASK_PRIORITIES)[number]) &&
     typeof record.createdAt === 'string' &&
     typeof record.updatedAt === 'string'
   );
