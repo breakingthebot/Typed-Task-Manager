@@ -5,11 +5,12 @@
  * Created: 2026-06-18
  */
 
-import { APP_NAME } from '../config/app-config';
+import { APP_NAME, STORAGE_VERSION } from '../config/app-config';
 import type { Task, TaskFilters, TaskStatus } from '../models/task';
 import { TaskNotFoundError, TaskValidationError, type TaskService } from '../services/task-service';
 import { log } from '../utils/logger';
 import { formatTaskTimestamp } from '../utils/date-format';
+import { createTaskDataTools } from './task-data-tools';
 import { createTaskFilters } from './task-filters';
 import { createTaskForm, type TaskFormMode, type TaskFormValues } from './task-form';
 import { createTaskList } from './task-list';
@@ -23,6 +24,8 @@ interface TaskAppState {
   formErrors: string[];
   statusMessage: string;
   loadError: string;
+  dataErrors: string[];
+  dataText: string;
 }
 
 interface TaskApp {
@@ -47,6 +50,8 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     formErrors: [],
     statusMessage: 'Ready to manage your work.',
     loadError: '',
+    dataErrors: [],
+    dataText: '',
   };
 
   /** Mounts the app with an initial loading state before the first render. */
@@ -147,6 +152,48 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     render();
   }
 
+  /** Exports the full task collection into the JSON panel. */
+  function handleExportData(): void {
+    try {
+      const data = taskService.list({ sort: 'updatedAt-desc' });
+      state.dataText = JSON.stringify({ version: STORAGE_VERSION, items: data }, null, 2);
+      state.dataErrors = [];
+      state.statusMessage = 'Task JSON exported.';
+      render();
+    } catch (error) {
+      state.dataErrors = [getUserMessage(error, 'Task data could not be exported.')];
+      render();
+    }
+  }
+
+  /** Imports task JSON into storage and refreshes the board. */
+  function handleImportData(value: string): void {
+    try {
+      const parsed = JSON.parse(value) as { version?: unknown; items?: unknown };
+      if (parsed.version !== STORAGE_VERSION || !Array.isArray(parsed.items)) {
+        throw new Error('Import JSON must contain a version 1 task collection.');
+      }
+
+      taskService.replaceAll(parsed.items as Task[]);
+      state.dataText = JSON.stringify(
+        { version: STORAGE_VERSION, items: taskService.list({ sort: 'updatedAt-desc' }) },
+        null,
+        2,
+      );
+      state.dataErrors = [];
+      state.statusMessage = 'Task data imported.';
+      refreshTasks(state.statusMessage);
+    } catch (error) {
+      state.dataErrors = [getUserMessage(error, 'Task data could not be imported.')];
+      render();
+    }
+  }
+
+  /** Mirrors the JSON textarea as the user edits it. */
+  function handleDataInput(value: string): void {
+    state.dataText = value;
+  }
+
   /** Replaces the current screen with the full application shell. */
   function render(): void {
     root.replaceChildren(buildShell());
@@ -231,8 +278,17 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
       }),
     );
 
+    const dataPanel = createTaskDataTools({
+      exportedValue: state.dataText,
+      statusMessage: state.statusMessage,
+      errors: state.dataErrors,
+      onExport: handleExportData,
+      onImport: handleImportData,
+      onInput: handleDataInput,
+    });
+
     content.append(formPanel, boardPanel);
-    shell.append(hero, feedback, content);
+    shell.append(hero, feedback, content, dataPanel);
     return shell;
   }
 

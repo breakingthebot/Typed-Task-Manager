@@ -11,14 +11,16 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
-## [0.4.0] - 2026-06-19
+## [0.5.0] - 2026-06-19
 
 ### Added
 
 - Status-grouped task board columns for `To do`, `In progress`, and `Done`.
 - Visible board counters for overall tasks and per-status totals.
 - Sort controls for newest, oldest, priority, and title ordering.
+- JSON import/export tooling for moving task collections between browsers.
 - Browser tests covering grouped board layout, counters, and sorting behavior.
+- Browser tests covering task import and export round-trips.
 
 ### Changed
 

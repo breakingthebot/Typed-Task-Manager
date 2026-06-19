@@ -104,6 +104,34 @@ describe('task app', () => {
 
     expect(todoTitles).toEqual(['Alpha item', 'Zulu item']);
   });
+
+  it('exports and imports the task collection through the data tools panel', () => {
+    const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
+    const root = document.querySelector<HTMLElement>('#app');
+
+    if (!root) throw new Error('Missing app root in test.');
+
+    createTaskApp(root, service).mount();
+
+    setInputValue('Title', 'Move this task');
+    clickButton('Add task');
+    clickButton('Export JSON');
+
+    const exportedJson = getTextareaValue('task-data-json');
+    expect(exportedJson).toContain('Move this task');
+
+    document.body.innerHTML = '<div id="app"></div>';
+    const importRoot = document.querySelector<HTMLElement>('#app');
+
+    if (!importRoot) throw new Error('Missing app root in import test.');
+
+    createTaskApp(importRoot, new TaskService(new MemoryStorage())).mount();
+    setTextareaById('task-data-json', exportedJson);
+    clickButton('Import JSON');
+
+    expect(importRoot.textContent).toContain('Task data imported.');
+    expect(importRoot.textContent).toContain('Move this task');
+  });
 });
 
 /** Creates deterministic task IDs so UI tests can assert stable updates. */
@@ -136,6 +164,16 @@ function setTextAreaValue(labelText: string, value: string): void {
   textArea.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
+/** Changes one textarea by ID. */
+function setTextareaById(id: string, value: string): void {
+  const textArea = document.getElementById(id);
+  if (!(textArea instanceof HTMLTextAreaElement)) {
+    throw new Error(`Textarea "${id}" not found.`);
+  }
+  textArea.value = value;
+  textArea.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
 /** Changes one select chosen by its visible field label. */
 function setSelectValue(labelText: string, value: string): void {
   const label = findLabel(labelText);
@@ -164,6 +202,15 @@ function changeSelectValue(labelText: string, value: string): void {
   }
   select.value = value;
   select.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+/** Reads the value of one textarea by ID. */
+function getTextareaValue(id: string): string {
+  const textArea = document.getElementById(id);
+  if (!(textArea instanceof HTMLTextAreaElement)) {
+    throw new Error(`Textarea "${id}" not found.`);
+  }
+  return textArea.value;
 }
 
 /** Returns one grouped board column by its visible heading. */

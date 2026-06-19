@@ -101,6 +101,13 @@ export class TaskService {
     return task;
   }
 
+  /** Replaces every stored task with the provided collection. */
+  replaceAll(tasks: Task[]): void {
+    this.assertImportedTasks(tasks);
+    this.writeTasks(tasks);
+    log('info', 'Task collection replaced', { count: tasks.length });
+  }
+
   /** Converts parsing and storage failures into explicit diagnostic errors. */
   private readTasks(): Task[] {
     const raw = this.storage.read(STORAGE_KEY);
@@ -138,6 +145,19 @@ export class TaskService {
     const result = validateTaskInput(input, requireTitle);
     if (!result.isValid) throw new TaskValidationError(result.issues.map(({ message }) => message));
   }
+
+  /** Validates imported task records before they replace the existing collection. */
+  private assertImportedTasks(tasks: Task[]): void {
+    if (!Array.isArray(tasks)) {
+      throw new Error('Imported tasks must be an array.');
+    }
+
+    tasks.forEach((task, index) => {
+      if (!isImportedTask(task)) {
+        throw new Error(`Imported task at index ${index} is not valid.`);
+      }
+    });
+  }
 }
 
 const PRIORITY_RANK: Record<TaskPriority, number> = {
@@ -171,4 +191,20 @@ function sortTasks(tasks: Task[], sort: TaskFilters['sort']): Task[] {
   }
 
   return sorted.sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
+}
+
+/** Checks whether an imported value matches the persisted task shape. */
+function isImportedTask(value: unknown): value is Task {
+  if (typeof value !== 'object' || value === null) return false;
+
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record.id === 'string' &&
+    typeof record.title === 'string' &&
+    typeof record.description === 'string' &&
+    typeof record.status === 'string' &&
+    typeof record.priority === 'string' &&
+    typeof record.createdAt === 'string' &&
+    typeof record.updatedAt === 'string'
+  );
 }

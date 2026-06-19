@@ -84,6 +84,31 @@ describe('TaskService', () => {
     ]);
   });
 
+  it('replaces all tasks during import and rejects malformed task records', () => {
+    const imported = [
+      {
+        id: 'task-1',
+        title: 'Imported task',
+        description: 'Imported description',
+        status: 'todo' as const,
+        priority: 'medium' as const,
+        createdAt: '2026-06-18T12:00:00.000Z',
+        updatedAt: '2026-06-18T12:00:00.000Z',
+      },
+    ];
+
+    service.replaceAll(imported);
+    expect(service.list()).toEqual(imported);
+    expect(() =>
+      service.replaceAll([
+        {
+          ...imported[0],
+          title: 123 as unknown as string,
+        },
+      ]),
+    ).toThrow('Imported task at index 0 is not valid.');
+  });
+
   it('rejects invalid input with a user-safe domain error', () => {
     expect(() => service.create({ title: '' })).toThrow(TaskValidationError);
   });
