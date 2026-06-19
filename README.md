@@ -61,6 +61,8 @@ This build starts with a typed domain core and then layers a framework-free brow
 
 Every write validates and normalizes input first. Stored data carries a schema version so malformed or incompatible saved data fails explicitly instead of silently producing incorrect results. The UI adds loading, empty, validation, and storage-error states so the app still explains what is happening when something goes wrong. The board is now grouped into status columns with visible counters and sort controls, which makes it easier to scan current work without changing the underlying CRUD service.
 
+This iteration focuses on information density and board control, not new persistence rules. That keeps the codebase modular while making the main task board easier to read at a glance.
+
 ## Testing
 
 Tests mirror the source structure and now cover both domain behavior and core browser interaction flows including create, edit, filter, and delete actions.

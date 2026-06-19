@@ -60,6 +60,30 @@ describe('TaskService', () => {
     expect(service.list({ status: 'done' })).toEqual([]);
   });
 
+  it('sorts tasks by the selected board sort mode', () => {
+    service.create({ title: 'Zulu task', priority: 'low' });
+    timestamp = '2026-06-18T12:10:00.000Z';
+    service.create({ title: 'Alpha task', priority: 'high' });
+    timestamp = '2026-06-18T12:20:00.000Z';
+    service.create({ title: 'Middle task', priority: 'medium' });
+
+    expect(service.list({ sort: 'title-asc' }).map(({ title }) => title)).toEqual([
+      'Alpha task',
+      'Middle task',
+      'Zulu task',
+    ]);
+    expect(service.list({ sort: 'priority-desc' }).map(({ priority }) => priority)).toEqual([
+      'high',
+      'medium',
+      'low',
+    ]);
+    expect(service.list({ sort: 'updatedAt-asc' }).map(({ title }) => title)).toEqual([
+      'Zulu task',
+      'Alpha task',
+      'Middle task',
+    ]);
+  });
+
   it('rejects invalid input with a user-safe domain error', () => {
     expect(() => service.create({ title: '' })).toThrow(TaskValidationError);
   });
