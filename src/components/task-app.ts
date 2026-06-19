@@ -8,7 +8,9 @@
 import { APP_NAME, STORAGE_VERSION } from '../config/app-config';
 import type { Task, TaskFilters, TaskStatus } from '../models/task';
 import type { TaskBackupRecord } from '../models/task-backup';
+import { BrowserStorageAdapter } from '../services/storage-adapter';
 import { TaskNotFoundError, TaskValidationError, type TaskService } from '../services/task-service';
+import { UiPreferencesService } from '../services/ui-preferences-service';
 import { log } from '../utils/logger';
 import { formatTaskTimestamp } from '../utils/date-format';
 import { createTaskBackupHistory } from './task-backup-history';
@@ -46,9 +48,11 @@ const DEFAULT_FORM_VALUES: TaskFormValues = {
 
 /** Creates the interactive browser application around a task service instance. */
 export function createTaskApp(root: HTMLElement, taskService: TaskService): TaskApp {
+  const preferencesService = new UiPreferencesService(new BrowserStorageAdapter());
+
   const state: TaskAppState = {
     tasks: [],
-    filters: { sort: 'updatedAt-desc' },
+    filters: preferencesService.readFilters(),
     mode: 'create',
     editingTaskId: null,
     formValues: { ...DEFAULT_FORM_VALUES },
@@ -91,6 +95,7 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
   /** Updates active filters and rerenders the filtered task list. */
   function handleFilterChange(filters: TaskFilters): void {
     state.filters = filters;
+    preferencesService.writeFilters(filters);
     refreshTasks('Updated task filters.');
   }
 

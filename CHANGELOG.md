@@ -11,6 +11,18 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-06-19
+
+### Added
+
+- Persisted board filters and sort order using browser storage.
+- Service coverage for storing, restoring, and validating UI preferences.
+- Browser coverage proving the board restores saved filter state after reload.
+
+### Changed
+
+- README now documents saved board preferences and reload behavior.
+
 ## [0.8.0] - 2026-06-19
 
 ### Added

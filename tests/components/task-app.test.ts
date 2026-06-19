@@ -16,6 +16,7 @@ import { MemoryStorage } from '../helpers/memory-storage';
 describe('task app', () => {
   beforeEach(() => {
     document.body.innerHTML = '<div id="app"></div>';
+    window.localStorage.clear();
   });
 
   it('creates, filters, edits, and deletes tasks through the browser UI', () => {
@@ -186,6 +187,37 @@ describe('task app', () => {
     expect(root.textContent).toContain('Restored backup from');
     expect(root.textContent).toContain('Original task');
   });
+
+  it('restores saved board filters on reload', () => {
+    const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
+    const root = document.querySelector<HTMLElement>('#app');
+
+    if (!root) throw new Error('Missing app root in test.');
+
+    createTaskApp(root, service).mount();
+
+    setInputValue('Title', 'Launch plan');
+    setSelectValue('Status', 'in-progress');
+    setSelectValue('Priority', 'high');
+    clickButton('Add task');
+
+    setInputValue('Search', 'launch');
+    changeSelectValue('Status', 'in-progress');
+    changeSelectValue('Priority', 'high');
+    changeSelectValue('Sort', 'title-asc');
+
+    document.body.innerHTML = '<div id="app"></div>';
+    const reloadRoot = document.querySelector<HTMLElement>('#app');
+    if (!reloadRoot) throw new Error('Missing app root after reload.');
+
+    createTaskApp(reloadRoot, service).mount();
+
+    expect(getInputValue('Search')).toBe('launch');
+    expect(getAriaSelectValue('Status')).toBe('in-progress');
+    expect(getAriaSelectValue('Priority')).toBe('high');
+    expect(getAriaSelectValue('Sort')).toBe('title-asc');
+    expect(reloadRoot.textContent).toContain('Launch plan');
+  });
 });
 
 /** Creates deterministic task IDs so UI tests can assert stable updates. */
@@ -207,6 +239,14 @@ function setInputValue(labelText: string, value: string): void {
   if (!input) throw new Error(`Input not found for label "${labelText}".`);
   input.value = value;
   input.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+/** Reads the current value of one text input selected by its visible label. */
+function getInputValue(labelText: string): string {
+  const label = findLabel(labelText);
+  const input = label.querySelector('input');
+  if (!input) throw new Error(`Input not found for label "${labelText}".`);
+  return input.value;
 }
 
 /** Changes one text area selected by its visible label. */
@@ -235,6 +275,17 @@ function setSelectValue(labelText: string, value: string): void {
   if (!select) throw new Error(`Select not found for label "${labelText}".`);
   select.value = value;
   select.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+/** Reads the current value of one select control by its accessible label. */
+function getAriaSelectValue(labelText: string): string {
+  const select = Array.from(document.querySelectorAll('select')).find(
+    (candidate) => candidate.getAttribute('aria-label') === labelText,
+  );
+  if (!(select instanceof HTMLSelectElement)) {
+    throw new Error(`Select "${labelText}" not found.`);
+  }
+  return select.value;
 }
 
 /** Clicks the first button whose text exactly matches the requested label. */
