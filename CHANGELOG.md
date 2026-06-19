@@ -11,6 +11,17 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-19
+
+### Added
+
+- Reset filters button for clearing saved board preferences back to the default view.
+- Browser coverage for the filter reset flow.
+
+### Changed
+
+- README now documents the reset action for board preferences.
+
 ## [1.0.0] - 2026-06-19
 
 ### Added

@@ -248,6 +248,27 @@ describe('task app', () => {
     expect(getAriaSelectValue('Sort')).toBe('title-asc');
     expect(reloadRoot.textContent).toContain('Launch plan');
   });
+
+  it('resets board filters to the default view', () => {
+    const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
+    const root = document.querySelector<HTMLElement>('#app');
+
+    if (!root) throw new Error('Missing app root in test.');
+
+    createTaskApp(root, service).mount();
+
+    setInputValue('Search', 'alpha');
+    changeSelectValue('Status', 'done');
+    changeSelectValue('Priority', 'high');
+    changeSelectValue('Sort', 'title-asc');
+    clickButton('Reset filters');
+
+    expect(root.textContent).toContain('Board filters reset.');
+    expect(getInputValue('Search')).toBe('');
+    expect(getAriaSelectValue('Status')).toBe('');
+    expect(getAriaSelectValue('Priority')).toBe('');
+    expect(getAriaSelectValue('Sort')).toBe('updatedAt-desc');
+  });
 });
 
 /** Creates deterministic task IDs so UI tests can assert stable updates. */

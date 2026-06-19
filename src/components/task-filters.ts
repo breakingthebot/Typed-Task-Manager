@@ -15,6 +15,7 @@ import {
 interface TaskFilterOptions {
   filters: TaskFilters;
   onChange(filters: TaskFilters): void;
+  onReset(): void;
 }
 
 /** Creates the filter bar and emits the current filter state after each change. */
@@ -69,6 +70,12 @@ export function createTaskFilters(options: TaskFilterOptions): HTMLElement {
     });
   };
 
+  const resetButton = document.createElement('button');
+  resetButton.type = 'button';
+  resetButton.className = 'button button-secondary';
+  resetButton.textContent = 'Reset filters';
+  resetButton.addEventListener('click', () => options.onReset());
+
   queryField.addEventListener('input', syncFilters);
   statusField.addEventListener('change', syncFilters);
   priorityField.addEventListener('change', syncFilters);
@@ -79,6 +86,7 @@ export function createTaskFilters(options: TaskFilterOptions): HTMLElement {
     wrapFilter('Status', statusField),
     wrapFilter('Priority', priorityField),
     wrapFilter('Sort', sortField),
+    resetButton,
   );
   wrapper.append(heading, controls);
   return wrapper;

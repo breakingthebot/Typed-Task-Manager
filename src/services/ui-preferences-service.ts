@@ -46,6 +46,11 @@ export class UiPreferencesService {
     }
   }
 
+  /** Resets the saved board preferences back to the default filter state. */
+  resetFilters(): void {
+    this.writeFilters(DEFAULT_FILTERS);
+  }
+
   /** Reads the stored preference record and returns the first saved snapshot. */
   private readPreferences(): UiPreferences | null {
     const raw = this.storage.read(UI_PREFERENCES_KEY);

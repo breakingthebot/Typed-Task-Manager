@@ -36,6 +36,22 @@ describe('UiPreferencesService', () => {
     });
   });
 
+  it('resets task board filters to the default view', () => {
+    const storage = new MemoryStorage();
+    const service = new UiPreferencesService(storage);
+
+    service.writeFilters({
+      query: 'launch',
+      status: 'in-progress',
+      priority: 'high',
+      sort: 'title-asc',
+    });
+
+    service.resetFilters();
+
+    expect(service.readFilters()).toEqual({ sort: 'updatedAt-desc' });
+  });
+
   it('treats malformed stored preferences as empty', () => {
     const storage = new MemoryStorage();
     storage.write(UI_PREFERENCES_KEY, '{broken-json');

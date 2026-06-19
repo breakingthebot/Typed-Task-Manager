@@ -73,6 +73,8 @@ The preference state lives in its own storage service, which keeps board setting
 
 This iteration adds task duplication, so a card can be copied into a fresh create draft instead of being rebuilt manually.
 
+This iteration adds a reset action for saved board preferences, so you can get back to the default task view in one click.
+
 ## Testing
 
 Tests mirror the source structure and now cover domain behavior plus browser interaction flows including create, edit, duplicate, filter, delete, backup restore, and persisted preferences.
@@ -94,6 +96,7 @@ npm run check
 - The app remembers the last-used board filters and sort order across reloads.
 - Board preferences are stored separately from task data.
 - Tasks can be duplicated into a prefilled create draft from the board.
+- Board filters can be reset back to the default view.
 - See [CHANGELOG.md](CHANGELOG.md) for iteration history.
 
 ## License

@@ -46,6 +46,8 @@ const DEFAULT_FORM_VALUES: TaskFormValues = {
   priority: 'medium',
 };
 
+const DEFAULT_BOARD_FILTERS: TaskFilters = { sort: 'updatedAt-desc' };
+
 /** Creates the interactive browser application around a task service instance. */
 export function createTaskApp(root: HTMLElement, taskService: TaskService): TaskApp {
   const preferencesService = new UiPreferencesService(new BrowserStorageAdapter());
@@ -97,6 +99,13 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     state.filters = filters;
     preferencesService.writeFilters(filters);
     refreshTasks('Updated task filters.');
+  }
+
+  /** Resets the board filters and persists the default view. */
+  function handleResetFilters(): void {
+    state.filters = { ...DEFAULT_BOARD_FILTERS };
+    preferencesService.resetFilters();
+    refreshTasks('Board filters reset.');
   }
 
   /** Applies form submissions to either create or update one task. */
@@ -377,6 +386,7 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
       createTaskFilters({
         filters: state.filters,
         onChange: handleFilterChange,
+        onReset: handleResetFilters,
       }),
       createTaskList({
         tasks: state.tasks,
