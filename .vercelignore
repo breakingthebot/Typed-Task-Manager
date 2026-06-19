@@ -1,0 +1,17 @@
+# .vercelignore
+# Prevents local, generated, and sensitive files from reaching deployments.
+# Connects to: .gitignore, Vercel CLI
+# Created: 2026-06-18
+
+AGENTS.md
+.env
+venv/
+__pycache__/
+*.pyc
+node_modules/
+.DS_Store
+*.log
+dist/
+build/
+coverage/
+.vercel/

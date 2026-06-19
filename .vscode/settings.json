@@ -1,0 +1,12 @@
+{
+  "_comment": "Workspace formatting and file visibility settings. Created 2026-06-18.",
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/node_modules": true,
+    "**/dist": true
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

@@ -1,0 +1,17 @@
+# .gitignore
+# Excludes local, generated, and sensitive files from version control.
+# Connects to: npm, Vite, local environment configuration
+# Created: 2026-06-18
+
+AGENTS.md
+.env
+venv/
+__pycache__/
+*.pyc
+node_modules/
+.DS_Store
+*.log
+dist/
+build/
+coverage/
+.vercel/
