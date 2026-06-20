@@ -11,6 +11,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-06-19
+
+### Changed
+
+- Refined the interface with softer surfaces, rounded controls, and clearer spacing.
+- Improved the board and task cards so the layout feels less blocky and easier to scan.
+- README now describes the updated visual treatment.
+
 ## [1.3.0] - 2026-06-19
 
 ### Added
