@@ -5,7 +5,7 @@
  * Created: 2026-06-18
  */
 
-import { APP_NAME, STORAGE_VERSION } from '../config/app-config';
+import { APP_NAME } from '../config/app-config';
 import type { Task, TaskFilters, TaskStatus } from '../models/task';
 import type { TaskBackupRecord } from '../models/task-backup';
 import { BrowserStorageAdapter } from '../services/storage-adapter';
@@ -13,6 +13,7 @@ import { TaskNotFoundError, TaskValidationError, type TaskService } from '../ser
 import { UiPreferencesService } from '../services/ui-preferences-service';
 import { log } from '../utils/logger';
 import { formatTaskTimestamp } from '../utils/date-format';
+import { parseTaskCollection, serializeTaskCollection } from '../utils/task-collection';
 import { createTaskBulkActions } from './task-bulk-actions';
 import { createTaskBackupHistory } from './task-backup-history';
 import { createTaskDataTools } from './task-data-tools';
@@ -292,7 +293,7 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
   function handleExportData(): void {
     try {
       const data = taskService.list({ sort: 'updatedAt-desc' });
-      state.dataText = JSON.stringify({ version: STORAGE_VERSION, items: data }, null, 2);
+      state.dataText = serializeTaskCollection(data);
       state.dataErrors = [];
       state.statusMessage = 'Task JSON exported.';
       render();
@@ -305,17 +306,15 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
   /** Imports task JSON into storage and refreshes the board. */
   function handleImportData(value: string): void {
     try {
-      const parsed = JSON.parse(value) as { version?: unknown; items?: unknown };
-      if (parsed.version !== STORAGE_VERSION || !Array.isArray(parsed.items)) {
-        throw new Error('Import JSON must contain a version 1 task collection.');
+      const parsed = parseTaskCollection(value);
+      if (!parsed.ok) {
+        state.dataErrors = parsed.issues.map((issue) => issue.message);
+        render();
+        return;
       }
 
-      taskService.replaceAll(parsed.items as Task[]);
-      state.dataText = JSON.stringify(
-        { version: STORAGE_VERSION, items: taskService.list({ sort: 'updatedAt-desc' }) },
-        null,
-        2,
-      );
+      taskService.replaceAll(parsed.collection.items);
+      state.dataText = serializeTaskCollection(taskService.list({ sort: 'updatedAt-desc' }));
       state.dataErrors = [];
       state.statusMessage = 'Task data imported.';
       refreshTasks(state.statusMessage);

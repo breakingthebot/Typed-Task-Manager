@@ -11,6 +11,18 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-06-19
+
+### Added
+
+- Typed task collection envelope and parser utility for import/export.
+- Browser coverage for valid, invalid, and version-mismatched task JSON imports.
+
+### Changed
+
+- Task import/export now returns explicit schema errors instead of relying on raw JSON parsing.
+- README now documents the typed import/export boundary.
+
 ## [1.6.0] - 2026-06-19
 
 ### Changed

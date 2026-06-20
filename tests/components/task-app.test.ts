@@ -134,6 +134,23 @@ describe('task app', () => {
     expect(importRoot.textContent).toContain('Move this task');
   });
 
+  it('shows typed validation feedback for invalid task imports', () => {
+    const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
+    const root = document.querySelector<HTMLElement>('#app');
+
+    if (!root) throw new Error('Missing app root in test.');
+
+    createTaskApp(root, service).mount();
+
+    setTextareaById(
+      'task-data-json',
+      JSON.stringify({ version: 999, items: [] }, null, 2),
+    );
+    clickButton('Import JSON');
+
+    expect(root.textContent).toContain('Task JSON must use version 1.');
+  });
+
   it('supports keyboard shortcuts and undoing a delete', () => {
     const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
     const root = document.querySelector<HTMLElement>('#app');
