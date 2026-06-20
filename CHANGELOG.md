@@ -11,6 +11,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-06-19
+
+### Changed
+
+- Tightened the typography and spacing so the interface reads more like a focused product surface.
+- Reduced the blocky feel across panels, cards, and board columns.
+- README now describes the denser layout and visual refinement.
+
 ## [1.4.0] - 2026-06-19
 
 ### Changed

@@ -61,7 +61,7 @@ This build starts with a typed domain core and then layers a framework-free brow
 
 Every write validates and normalizes input first. Stored data carries a schema version so malformed or incompatible saved data fails explicitly instead of silently producing incorrect results. The UI adds loading, empty, validation, and storage-error states so the app still explains what is happening when something goes wrong. The board is now grouped into status columns with visible counters and sort controls, which makes it easier to scan current work without changing the underlying CRUD service.
 
-The app includes JSON import/export, keyboard shortcuts, delete undo, backup history, persisted board filters, task templates, task duplication, preference reset, and bulk task actions. Those features are split across focused components and services so the UI stays small and the domain logic stays testable. The latest polish pass softens the surfaces, increases spacing, and gives the board clearer visual hierarchy so the layout feels less blocky.
+The app includes JSON import/export, keyboard shortcuts, delete undo, backup history, persisted board filters, task templates, task duplication, preference reset, and bulk task actions. Those features are split across focused components and services so the UI stays small and the domain logic stays testable. The latest polish pass tightens the typography, reduces visual bulk, and gives the board clearer hierarchy so the layout reads more like a product surface than a generic form stack.
 
 ## Testing
 
@@ -88,6 +88,7 @@ npm run check
 - Board filters can be reset back to the default view.
 - Multiple selected tasks can be updated or deleted together.
 - The interface uses softer cards, rounded controls, and clearer section hierarchy.
+- The latest spacing pass makes the board denser and easier to scan.
 - See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## License
