@@ -11,6 +11,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-06-19
+
+### Changed
+
+- Reverted the app to a neutral light visual system so the interface is readable on refresh.
+- Kept the denser spacing and clearer hierarchy from the last polish passes.
+- README now describes the lighter, more legible theme.
+
 ## [1.7.0] - 2026-06-19
 
 ### Added

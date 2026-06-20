@@ -7,7 +7,7 @@ Created: 2026-06-18
 
 # Typed Task Manager
 
-A browser-based task manager built with strict TypeScript, modular UI components, grouped task board sections, import/export tooling, backup history, saved board preferences, task templates, task duplication, bulk task actions, delete undo, and a higher-contrast visual system built for easier scanning.
+A browser-based task manager built with strict TypeScript, modular UI components, grouped task board sections, import/export tooling, backup history, saved board preferences, task templates, task duplication, bulk task actions, delete undo, and a refined neutral visual system built for easier scanning.
 
 ## Stack
 
@@ -61,7 +61,7 @@ This build starts with a typed domain core and then layers a framework-free brow
 
 Every write validates and normalizes input first. Stored data carries a schema version so malformed or incompatible saved data fails explicitly instead of silently producing incorrect results. The UI adds loading, empty, validation, and storage-error states so the app still explains what is happening when something goes wrong. The board is now grouped into status columns with visible counters and sort controls, which makes it easier to scan current work without changing the underlying CRUD service.
 
-The app includes JSON import/export, keyboard shortcuts, delete undo, backup history, persisted board filters, task templates, task duplication, preference reset, and bulk task actions. Those features are split across focused components and services so the UI stays small and the domain logic stays testable. The latest TypeScript pass adds a typed import/export envelope with explicit parse results, so malformed task JSON fails with a readable schema message instead of a generic JSON error. The visual system still uses the darker, higher-contrast theme with tighter hierarchy.
+The app includes JSON import/export, keyboard shortcuts, delete undo, backup history, persisted board filters, task templates, task duplication, preference reset, and bulk task actions. Those features are split across focused components and services so the UI stays small and the domain logic stays testable. The latest TypeScript pass adds a typed import/export envelope with explicit parse results, so malformed task JSON fails with a readable schema message instead of a generic JSON error. The visual system now uses a neutral light theme with tighter hierarchy so the screen stays readable on refresh.
 
 ## Testing
 
@@ -89,7 +89,7 @@ npm run check
 - Multiple selected tasks can be updated or deleted together.
 - The interface uses softer cards, rounded controls, and clearer section hierarchy.
 - The latest spacing pass makes the board denser and easier to scan.
-- The current palette uses a darker, higher-contrast theme.
+- The current palette is a neutral light theme to keep the page readable on refresh.
 - Task import/export uses a typed JSON envelope with explicit parse errors.
 - See [CHANGELOG.md](CHANGELOG.md) for release history.
 
