@@ -207,6 +207,28 @@ describe('task app', () => {
     expect(root.textContent).toContain('Cloned task');
   });
 
+  it('loads a template into the task form and saves it as a new task', () => {
+    const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
+    const root = document.querySelector<HTMLElement>('#app');
+
+    if (!root) throw new Error('Missing app root in test.');
+
+    createTaskApp(root, service).mount();
+
+    clickButton('Use template');
+
+    expect(root.textContent).toContain('Loaded "Feature kickoff" template.');
+    expect(getInputValue('Title')).toBe('Plan the next feature');
+    expect(getTextareaValueById('task-description')).toContain('Define the user goal');
+    expect(getSelectValueById('task-status')).toBe('todo');
+    expect(getSelectValueById('task-priority')).toBe('medium');
+
+    clickButton('Add task');
+
+    expect(root.textContent).toContain('Task created.');
+    expect(root.textContent).toContain('Plan the next feature');
+  });
+
   it('shows backup history and restores a saved snapshot', () => {
     const service = new TaskService(new MemoryStorage(), createIdFactory(), createTimeFactory());
     const root = document.querySelector<HTMLElement>('#app');

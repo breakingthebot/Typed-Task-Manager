@@ -19,6 +19,8 @@ import { createTaskDataTools } from './task-data-tools';
 import { createTaskFilters } from './task-filters';
 import { createTaskForm, type TaskFormMode, type TaskFormValues } from './task-form';
 import { createTaskList } from './task-list';
+import { createTaskTemplates } from './task-templates';
+import type { TaskTemplate } from '../models/task-template';
 
 interface TaskAppState {
   tasks: Task[];
@@ -187,6 +189,16 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
       state.statusMessage = getUserMessage(error, 'Task could not be duplicated.');
       render();
     }
+  }
+
+  /** Loads a reusable template into the create form. */
+  function handleApplyTemplate(template: TaskTemplate): void {
+    state.mode = 'create';
+    state.editingTaskId = null;
+    state.formErrors = [];
+    state.formValues = { ...template.values };
+    state.statusMessage = `Loaded "${template.label}" template.`;
+    render();
   }
 
   /** Removes one task from storage and refreshes the screen. */
@@ -424,6 +436,9 @@ export function createTaskApp(root: HTMLElement, taskService: TaskService): Task
     const formPanel = document.createElement('section');
     formPanel.className = 'panel';
     formPanel.append(
+      createTaskTemplates({
+        onApplyTemplate: handleApplyTemplate,
+      }),
       createTaskForm({
         mode: state.mode,
         values: state.formValues,

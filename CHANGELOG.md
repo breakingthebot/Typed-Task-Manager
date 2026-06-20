@@ -11,6 +11,17 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-06-19
+
+### Added
+
+- Starter task templates for fast form prefill on common work types.
+- Browser coverage for the template picker and the prefilling flow.
+
+### Changed
+
+- README now documents task templates alongside the existing UI features.
+
 ## [1.2.0] - 2026-06-19
 
 ### Added

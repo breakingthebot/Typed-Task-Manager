@@ -218,12 +218,27 @@ select:focus-visible {
 }
 
 .task-form,
+.task-templates,
 .task-filters,
 .task-list,
 .data-tools,
 .backup-history {
   display: grid;
   gap: 1rem;
+}
+
+.template-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.template-card {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(31, 42, 42, 0.08);
+  background: rgba(255, 255, 255, 0.75);
 }
 
 .task-board-grid {
