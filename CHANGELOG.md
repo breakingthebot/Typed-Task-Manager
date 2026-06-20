@@ -11,6 +11,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-06-19
+
+### Changed
+
+- Switched the app into a darker, higher-contrast visual theme.
+- Updated panels, cards, inputs, and board columns to fit the new product-style surface.
+- README now describes the active dark visual direction.
+
 ## [1.5.0] - 2026-06-19
 
 ### Changed

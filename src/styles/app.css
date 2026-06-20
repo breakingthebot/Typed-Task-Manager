@@ -6,30 +6,30 @@
  */
 
 :root {
-  color-scheme: light;
-  --bg: #f4efe8;
-  --bg-accent: #e4d5c0;
-  --panel: rgba(255, 252, 247, 0.84);
-  --panel-strong: #fffdf8;
-  --panel-glow: rgba(255, 255, 255, 0.72);
-  --text: #1f292b;
-  --muted: #5c6664;
-  --line: rgba(31, 42, 42, 0.1);
-  --line-strong: rgba(31, 42, 42, 0.16);
-  --primary: #0f6f5d;
-  --primary-strong: #084e41;
-  --danger: #a93f2f;
-  --todo: #98650f;
-  --progress: #0f5da9;
-  --done: #1d7c38;
-  --shadow: 0 18px 44px rgba(31, 42, 42, 0.1);
-  --shadow-soft: 0 8px 24px rgba(31, 42, 42, 0.07);
+  color-scheme: dark;
+  --bg: #0f1724;
+  --bg-accent: #18283a;
+  --panel: rgba(20, 29, 43, 0.86);
+  --panel-strong: #172131;
+  --panel-glow: rgba(255, 255, 255, 0.08);
+  --text: #edf4fb;
+  --muted: #a4b3c3;
+  --line: rgba(173, 190, 206, 0.16);
+  --line-strong: rgba(173, 190, 206, 0.24);
+  --primary: #5dc8a8;
+  --primary-strong: #8ef0cf;
+  --danger: #ff7e6d;
+  --todo: #f3b36f;
+  --progress: #7db7ff;
+  --done: #84e29a;
+  --shadow: 0 22px 56px rgba(3, 8, 18, 0.48);
+  --shadow-soft: 0 10px 28px rgba(3, 8, 18, 0.28);
   font-family: Inter, 'Segoe UI', 'Helvetica Neue', sans-serif;
   line-height: 1.45;
   color: var(--text);
   background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.75), transparent 36%),
-    radial-gradient(circle at 85% 5%, rgba(14, 111, 92, 0.09), transparent 26%),
+    radial-gradient(circle at top left, rgba(93, 200, 168, 0.12), transparent 34%),
+    radial-gradient(circle at 85% 5%, rgba(125, 183, 255, 0.12), transparent 26%),
     linear-gradient(135deg, var(--bg), var(--bg-accent));
 }
 
@@ -79,7 +79,7 @@ select:focus-visible {
 .panel {
   background: var(--panel);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(173, 190, 206, 0.18);
   border-radius: 1.6rem;
   box-shadow: var(--shadow);
   padding: 1.2rem;
@@ -88,7 +88,7 @@ select:focus-visible {
 .hero-panel {
   overflow: hidden;
   position: relative;
-  border-color: rgba(255, 255, 255, 0.62);
+  border-color: rgba(173, 190, 206, 0.22);
 }
 
 .hero-panel::after {
@@ -99,7 +99,7 @@ select:focus-visible {
   height: 14rem;
   border-radius: 50%;
   background:
-    radial-gradient(circle, rgba(14, 111, 92, 0.18), rgba(14, 111, 92, 0.04) 58%, transparent 70%);
+    radial-gradient(circle, rgba(93, 200, 168, 0.22), rgba(93, 200, 168, 0.06) 58%, transparent 70%);
 }
 
 .hero-panel h1,
@@ -172,8 +172,8 @@ select:focus-visible {
 .hero-stat {
   min-width: 9rem;
   padding: 0.85rem 1rem;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.68);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(173, 190, 206, 0.18);
   border-radius: 1.1rem;
   box-shadow: var(--shadow-soft);
 }
@@ -194,15 +194,15 @@ select:focus-visible {
   margin: 0;
   padding: 0.85rem 1rem;
   border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.76);
-  border: 1px solid rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(173, 190, 206, 0.18);
 }
 
 .feedback.error,
 .form-errors {
-  background: rgba(170, 63, 45, 0.09);
-  color: #7f2417;
-  border: 1px solid rgba(170, 63, 45, 0.2);
+  background: rgba(255, 126, 109, 0.08);
+  color: #ffd0ca;
+  border: 1px solid rgba(255, 126, 109, 0.22);
 }
 
 .toast {
@@ -212,20 +212,20 @@ select:focus-visible {
   gap: 1rem;
   padding: 0.8rem 0.95rem;
   border-radius: 1rem;
-  background: linear-gradient(135deg, rgba(14, 111, 92, 0.14), rgba(255, 255, 255, 0.7));
-  border: 1px solid rgba(14, 111, 92, 0.18);
+  background: linear-gradient(135deg, rgba(93, 200, 168, 0.14), rgba(24, 40, 58, 0.95));
+  border: 1px solid rgba(93, 200, 168, 0.24);
 }
 
 .toast-copy {
   margin: 0;
-  color: var(--primary-strong);
+  color: var(--text);
 }
 
 .bulk-actions {
   display: grid;
   gap: 1rem;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.52)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03)),
     var(--panel);
 }
 
@@ -239,8 +239,8 @@ select:focus-visible {
   gap: 0.75rem;
   padding: 0.95rem;
   border-radius: 1.1rem;
-  border: 1px solid rgba(31, 42, 42, 0.08);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.7));
+  border: 1px solid rgba(173, 190, 206, 0.16);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.03));
   box-shadow: var(--shadow-soft);
 }
 
@@ -280,8 +280,8 @@ select:focus-visible {
   gap: 0.65rem;
   padding: 1rem;
   border-radius: 1.2rem;
-  border: 1px solid rgba(31, 42, 42, 0.08);
-  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(173, 190, 206, 0.15);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .task-board-grid {
@@ -296,9 +296,9 @@ select:focus-visible {
   padding: 0.95rem;
   border-radius: 1.2rem;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.56)),
-    rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(31, 42, 42, 0.07);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.025)),
+    rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(173, 190, 206, 0.14);
   box-shadow: var(--shadow-soft);
   position: relative;
   overflow: hidden;
@@ -310,19 +310,19 @@ select:focus-visible {
   inset: 0 auto auto 0;
   width: 100%;
   height: 0.35rem;
-  background: rgba(31, 42, 42, 0.06);
+  background: rgba(173, 190, 206, 0.14);
 }
 
 .task-column-todo::before {
-  background: linear-gradient(90deg, rgba(153, 100, 14, 0.9), rgba(153, 100, 14, 0.25));
+  background: linear-gradient(90deg, rgba(243, 179, 111, 0.95), rgba(243, 179, 111, 0.3));
 }
 
 .task-column-in-progress::before {
-  background: linear-gradient(90deg, rgba(15, 92, 168, 0.9), rgba(15, 92, 168, 0.25));
+  background: linear-gradient(90deg, rgba(125, 183, 255, 0.95), rgba(125, 183, 255, 0.3));
 }
 
 .task-column-done::before {
-  background: linear-gradient(90deg, rgba(29, 123, 55, 0.9), rgba(29, 123, 55, 0.25));
+  background: linear-gradient(90deg, rgba(132, 226, 154, 0.95), rgba(132, 226, 154, 0.3));
 }
 
 .task-column-header {
@@ -337,7 +337,7 @@ select:focus-visible {
   padding: 0.2rem 0.65rem;
   border-radius: 999px;
   text-align: center;
-  background: rgba(31, 42, 42, 0.07);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--muted);
 }
 
@@ -361,9 +361,15 @@ select:focus-visible {
 .field select {
   width: 100%;
   padding: 0.8rem 0.95rem;
-  background: var(--panel-strong);
-  border: 1px solid rgba(31, 42, 42, 0.12);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  background: rgba(7, 13, 22, 0.72);
+  color: var(--text);
+  border: 1px solid rgba(173, 190, 206, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #7e90a3;
 }
 
 .button-row {
@@ -393,16 +399,16 @@ select:focus-visible {
 
 .button-primary {
   background: var(--primary);
-  color: white;
+  color: #0c1721;
 }
 
 .button-secondary {
-  background: rgba(8, 79, 66, 0.08);
+  background: rgba(93, 200, 168, 0.1);
   color: var(--primary-strong);
 }
 
 .button-danger {
-  background: rgba(170, 63, 45, 0.12);
+  background: rgba(255, 126, 109, 0.12);
   color: var(--danger);
 }
 
@@ -422,10 +428,10 @@ select:focus-visible {
   display: grid;
   gap: 0.8rem;
   padding: 0.95rem;
-  border: 1px solid rgba(31, 42, 42, 0.08);
+  border: 1px solid rgba(173, 190, 206, 0.15);
   border-radius: 1.15rem;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.76)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04)),
     var(--panel-strong);
   box-shadow: var(--shadow-soft);
   transition:
@@ -436,14 +442,14 @@ select:focus-visible {
 
 .task-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 24px rgba(31, 42, 42, 0.11);
+  box-shadow: 0 16px 28px rgba(3, 8, 18, 0.3);
 }
 
 .task-card-selected {
-  border-color: rgba(14, 111, 92, 0.3);
+  border-color: rgba(93, 200, 168, 0.34);
   box-shadow:
-    0 0 0 2px rgba(14, 111, 92, 0.1),
-    0 16px 28px rgba(31, 42, 42, 0.12);
+    0 0 0 2px rgba(93, 200, 168, 0.12),
+    0 16px 28px rgba(3, 8, 18, 0.32);
 }
 
 .task-card-header,
@@ -461,7 +467,7 @@ select:focus-visible {
 }
 
 .task-description {
-  color: var(--text);
+  color: #dce7f2;
 }
 
 .status-badge {
@@ -469,7 +475,7 @@ select:focus-visible {
   border-radius: 999px;
   font-size: 0.85rem;
   text-transform: capitalize;
-  background: rgba(31, 42, 42, 0.06);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .status-todo {
@@ -499,7 +505,7 @@ select:focus-visible {
   padding: 1.2rem;
   border: 1px dashed var(--line);
   border-radius: 1.15rem;
-  background: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .empty-state h3,
