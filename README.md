@@ -61,21 +61,7 @@ This build starts with a typed domain core and then layers a framework-free brow
 
 Every write validates and normalizes input first. Stored data carries a schema version so malformed or incompatible saved data fails explicitly instead of silently producing incorrect results. The UI adds loading, empty, validation, and storage-error states so the app still explains what is happening when something goes wrong. The board is now grouped into status columns with visible counters and sort controls, which makes it easier to scan current work without changing the underlying CRUD service.
 
-This iteration adds a JSON import/export panel so you can move task data between browsers without touching the storage layer. That keeps the codebase modular while still making backup and transfer flows explicit in the UI.
-
-This iteration also adds keyboard shortcuts and delete undo, which reduces accidental data loss and keeps the main actions fast for power users.
-
-This iteration adds a backup history panel that records recent snapshots after every write and lets you restore an earlier state without hand-editing JSON.
-
-This iteration adds persisted board filters, so the search, status, priority, and sort choices survive a reload and the board opens where you left it.
-
-The preference state lives in its own storage service, which keeps board settings separate from task records and lets the app restore them without mixing concerns.
-
-This iteration adds task duplication, so a card can be copied into a fresh create draft instead of being rebuilt manually.
-
-This iteration adds a reset action for saved board preferences, so you can get back to the default task view in one click.
-
-This iteration adds bulk task actions, so several selected cards can be moved or deleted together and restored from a single undo.
+The app includes JSON import/export, keyboard shortcuts, delete undo, backup history, persisted board filters, task duplication, preference reset, and bulk task actions. Those features are split across focused components and services so the UI stays small and the domain logic stays testable.
 
 ## Testing
 
@@ -100,7 +86,7 @@ npm run check
 - Tasks can be duplicated into a prefilled create draft from the board.
 - Board filters can be reset back to the default view.
 - Multiple selected tasks can be updated or deleted together.
-- See [CHANGELOG.md](CHANGELOG.md) for iteration history.
+- See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## License
 
