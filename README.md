@@ -53,7 +53,7 @@ npm run build
 
 ## Deployed
 
-Not deployed.
+Production: https://typed-task-manager.vercel.app
 
 ## Architecture Notes
 
